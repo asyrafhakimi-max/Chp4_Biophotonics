@@ -1,0 +1,2545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive beginner lecture note for NMJ40003 Bioinstrumentation II, Chapter 4: Biophotonics (UniMAP).">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Biophotonics Interactive Notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+/* Layout: one reading column of lesson cards; every simulation sits in a dark "instrument screen" panel, like a lab spectrometer display. */
+:root{
+  --bg:#F2F4F7; --fg:#13213A; --muted:#566377; --card:#FFFFFF; --line:#D8DEE7; --tint:#E8EEF5;
+  --accent:#C4561D; --accent-ink:#9A3F12; --blue:#1B65A6; --good:#1F7A4D; --warn:#A45A00;
+  --plain:#EAF2FB; --plain-ink:#0F3F6B;
+  --ff-display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --ff-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ff-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* Instrument screen: fixed dark in both themes by design */
+  --scr:#0B1322; --scr-2:#121D31; --scr-fg:#E7EEF8; --scr-muted:#9AABC2; --scr-line:#24324B; --scr-acc:#F2A65A;
+  --spectrum:linear-gradient(90deg,#6A3FB5 0%,#2F6FDB 20%,#2BA84A 40%,#E8D33A 60%,#F08A24 80%,#C9302C 100%);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1626; --fg:#E4EBF5; --muted:#9AA8BC; --card:#142038; --line:#26344F; --tint:#1A2842;
+    --accent:#F2A65A; --accent-ink:#F7BE84; --blue:#7FB8E6; --good:#5FD38D; --warn:#F2C060;
+    --plain:#16304F; --plain-ink:#CFE3F8; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1626; --fg:#E4EBF5; --muted:#9AA8BC; --card:#142038; --line:#26344F; --tint:#1A2842;
+  --accent:#F2A65A; --accent-ink:#F7BE84; --blue:#7FB8E6; --good:#5FD38D; --warn:#F2C060;
+  --plain:#16304F; --plain-ink:#CFE3F8; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--ff-body);font-size:17px;line-height:1.6;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--scr)}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--ff-display);text-wrap:balance;line-height:1.15;margin:0}
+p{margin:0}
+
+/* Top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--scr);color:var(--scr-fg);box-shadow:0 1px 0 var(--scr-line)}
+.topbar .wrap{display:flex;align-items:center;gap:12px;padding-block:8px}
+.brand{font-family:var(--ff-display);font-weight:600;font-size:18px;white-space:nowrap;color:var(--scr-fg);text-decoration:none}
+.brand span{color:var(--scr-acc)}
+.nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;min-width:0;flex:1}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;color:var(--scr-muted);text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:999px;border:1px solid var(--scr-line);white-space:nowrap}
+.nav a.on{color:#0B1322;background:var(--scr-acc);border-color:var(--scr-acc)}
+.progress{height:3px;background:var(--spectrum);transform-origin:left;transform:scaleX(0)}
+
+/* Hero */
+.hero{background:var(--scr);color:var(--scr-fg)}
+.hero .wrap{display:grid;gap:20px;padding-block:28px 32px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hero .eyebrow{color:var(--scr-acc)}
+.hero h1{font-size:clamp(44px,9vw,84px);font-weight:700;letter-spacing:-.01em}
+.hero .lede{font-size:clamp(18px,2.6vw,22px);color:#C9D5E6;max-width:36em}
+.hero-cv{width:100%;aspect-ratio:21/8;display:block;border-radius:12px;background:var(--scr-2)}
+.howto{display:grid;gap:10px;grid-template-columns:1fr;counter-reset:h}
+.howto li{list-style:none;display:flex;gap:12px;align-items:flex-start;background:var(--scr-2);border:1px solid var(--scr-line);border-radius:12px;padding:12px 14px;font-size:15px;color:#D6E0EE}
+.howto b{color:var(--scr-fg)}
+.howto .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--scr-acc);color:#0B1322;font-weight:700;font-size:14px}
+.howto ol{display:contents}
+.meta{font-size:14px;color:var(--scr-muted)}
+@media(min-width:760px){.howto{grid-template-columns:repeat(3,1fr)}}
+
+/* Parts */
+main{display:block}
+.part{padding-block:40px 8px;scroll-margin-top:70px}
+.part-head{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:end;margin-bottom:22px}
+.part-num{font-family:var(--ff-display);font-size:clamp(56px,10vw,88px);font-weight:700;line-height:.85;color:var(--accent);grid-row:span 2}
+.part-head h2{font-size:clamp(28px,4.6vw,40px)}
+.part-head p{color:var(--muted);font-size:16px;grid-column:2}
+.lessons{display:grid;gap:20px}
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:16px;min-width:0;scroll-margin-top:70px}
+@media(min-width:760px){.lesson{padding:28px}}
+.lesson-head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.lesson-head .no{font-family:var(--ff-mono);font-size:14px;color:var(--accent-ink);font-weight:600}
+.lesson-head h3{font-size:clamp(22px,3.4vw,28px);flex:1;min-width:0}
+.plain{background:var(--plain);color:var(--plain-ink);border-radius:12px;padding:14px 16px;display:grid;gap:6px}
+.plain .lbl{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.plain p{font-size:17px;max-width:68ch}
+.key{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.formula{font-family:var(--ff-display);font-size:22px;background:var(--tint);border-radius:10px;padding:6px 14px;white-space:nowrap}
+.key .what{font-size:15px;color:var(--muted);flex:1;min-width:200px}
+.body p{max-width:70ch}
+.body{display:grid;gap:10px}
+
+/* Instrument screen / simulations */
+.sim{background:var(--scr);color:var(--scr-fg);border-radius:14px;padding:12px;display:grid;gap:12px;min-width:0}
+.sim-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--scr-acc)}
+.sim-title::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--scr-acc);box-shadow:0 0 8px var(--scr-acc)}
+.cv{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:var(--scr-2);touch-action:pan-y}
+.cv.ar43{aspect-ratio:4/3}
+.cv.ar21{aspect-ratio:2/1}
+@media(max-width:600px){.cv.m-tall{aspect-ratio:4/5}.cv.m-sq{aspect-ratio:1/1}.cv.m-43{aspect-ratio:4/3}}
+.cv.grab{touch-action:none;cursor:grab}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.ro{background:var(--scr-2);border:1px solid var(--scr-line);border-radius:10px;padding:8px 10px;display:grid;gap:2px;min-width:0}
+.ro span{font-size:12px;color:var(--scr-muted);letter-spacing:.04em}
+.ro b{font-family:var(--ff-mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ro b.ok{color:#5FD38D}.ro b.bad{color:#FF8A7A}.ro b.mid{color:#F2C060}
+.simnote{font-size:15px;color:#D0DBEA;background:var(--scr-2);border-radius:10px;padding:10px 12px}
+.controls{display:grid;gap:12px}
+@media(min-width:700px){.controls.two{grid-template-columns:1fr 1fr}}
+.ctl{display:grid;gap:4px}
+.ctl .row{display:flex;justify-content:space-between;gap:8px;font-size:15px;color:#D0DBEA}
+.ctl output{font-family:var(--ff-mono);color:var(--scr-fg);font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--scr-line)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--scr-line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--scr-acc);border:3px solid #0B1322;margin-top:-10px;box-shadow:0 0 0 2px var(--scr-acc)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--scr-acc);border:3px solid #0B1322}
+input[type=range].spec::-webkit-slider-runnable-track{background:linear-gradient(90deg,#4B2C8A 0%,#6A3FB5 15%,#2F6FDB 22%,#2BA84A 30%,#E8D33A 36%,#F08A24 40%,#C9302C 45%,#5B2333 52%,#3A1A24 100%)}
+input[type=range].spec::-moz-range-track{background:linear-gradient(90deg,#4B2C8A 0%,#6A3FB5 15%,#2F6FDB 22%,#2BA84A 30%,#E8D33A 36%,#F08A24 40%,#C9302C 45%,#5B2333 52%,#3A1A24 100%)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid #3A4C6C;background:var(--scr-2);color:var(--scr-fg);cursor:pointer}
+.btn:hover{border-color:var(--scr-acc)}
+.btn.on,.btn.primary{background:var(--scr-acc);color:#0B1322;border-color:var(--scr-acc)}
+.chk{display:flex;align-items:center;gap:10px;font-size:15px;color:#D0DBEA;min-height:44px}
+.chk input{width:22px;height:22px;accent-color:var(--scr-acc)}
+
+/* Try-it steps */
+.try{display:grid;gap:10px}
+.try h4,.notice h4{margin:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:8px}
+.steps li{counter-increment:s;display:block;position:relative;padding-left:40px;min-height:28px;font-size:16px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--fg);font-weight:700;font-size:14px;font-family:var(--ff-mono)}
+.notice{border:1px dashed var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.notice p{font-size:16px}
+
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600;color:var(--blue);min-height:36px;display:flex;align-items:center}
+details .dbody{display:grid;gap:10px;padding-top:8px;font-size:16px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:520px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--tint);font-weight:600}
+tr:last-child td{border-bottom:none}
+
+.photo{display:flex;flex-wrap:wrap;gap:8px}
+.photo a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:15px;font-weight:500;color:var(--fg);border:1px solid var(--line);background:var(--tint);border-radius:999px;padding:8px 14px;min-height:40px}
+.photo a svg{flex:none;width:18px;height:18px;color:var(--accent)}
+.photo a:hover{border-color:var(--accent)}
+
+/* Infographic panels (inline SVG) */
+.info{background:var(--scr);border-radius:14px;padding:12px;color:var(--scr-fg);min-width:0}
+.info svg{display:block;width:100%;height:auto}
+.info .cap{font-size:14px;color:var(--scr-muted);padding:8px 4px 2px}
+.grid2{display:grid;gap:14px}
+@media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}}
+.grid3{display:grid;gap:12px}
+@media(min-width:760px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.mini{background:var(--tint);border-radius:12px;padding:14px;display:grid;gap:6px;min-width:0}
+.mini h4{margin:0;font-family:var(--ff-display);font-size:19px}
+.mini p{font-size:15px;color:var(--muted)}
+.mini .tag{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--card);border:1px solid var(--line)}
+
+/* Animations for infographics (GIF-like loops) */
+@keyframes dash{to{stroke-dashoffset:-36}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes drop{0%{transform:translateY(-30px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@keyframes ripple{0%{r:4;opacity:.9}100%{r:60;opacity:0}}
+@keyframes flash{0%,70%,100%{opacity:0}75%,85%{opacity:1}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(1)}}
+.flow{stroke-dasharray:12 6;animation:dash 1s linear infinite}
+.flow.slow{animation-duration:2s}
+.glow{animation:pulse 2s ease-in-out infinite}
+.rip{animation:ripple 2.4s ease-out infinite}
+.rip.d2{animation-delay:.8s}.rip.d3{animation-delay:1.6s}
+.dropa{animation:drop 1.6s linear infinite}
+.dropa.d2{animation-delay:.4s}.dropa.d3{animation-delay:.8s}.dropa.d4{animation-delay:1.2s}
+.flashy{animation:flash 2.4s linear infinite}
+.ix-g{transition:opacity .3s}
+.ix-dim .ix-g{opacity:.15}
+.ix-dim .ix-g.on{opacity:1}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .flow,.glow,.rip,.dropa,.flashy{animation:none}
+}
+
+/* Quiz */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:16px}
+.quiz h3{font-size:24px}
+.q{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.q p.qt{font-weight:600}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;font-size:16px;text-align:left;min-height:44px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.opt:hover{border-color:var(--blue)}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--bg))}
+.opt.wrong{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg))}
+.fb{font-size:15px;color:var(--muted)}
+.fb b{color:var(--fg)}
+.score{font-family:var(--ff-mono);font-weight:600;color:var(--accent-ink)}
+
+/* Review */
+.takeaways{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.takeaways li{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:baseline;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:17px}
+.takeaways .n{font-family:var(--ff-display);font-size:28px;font-weight:700;color:var(--accent)}
+.gloss{display:grid;gap:8px;grid-template-columns:1fr}
+@media(min-width:760px){.gloss{grid-template-columns:1fr 1fr}}
+.gloss div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.gloss dt{font-weight:700}
+.gloss dd{margin:2px 0 0;color:var(--muted);font-size:15px}
+footer{padding-block:32px 48px;color:var(--muted);font-size:14px}
+.refs{display:grid;gap:6px;font-size:14px;color:var(--muted);padding-left:18px;margin:0}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-photo" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">Bio<span>photonics</span></a>
+    <nav class="nav" aria-label="Parts of the lecture">
+      <a href="#intro">Intro</a>
+      <a href="#light">01 Light</a>
+      <a href="#tissue">02 Tissue</a>
+      <a href="#spectroscopy">03 Spectroscopy</a>
+      <a href="#imaging">04 Imaging</a>
+      <a href="#manipulation">05 Tweezers</a>
+      <a href="#review">Review</a>
+    </nav>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <p class="eyebrow">NMJ40003 Bioinstrumentation II · Chapter 4</p>
+    <h1>Biophotonics</h1>
+    <p class="lede">Using light to image, measure and manipulate living matter. Read each short explanation, then play with the simulation underneath it.</p>
+    <canvas class="hero-cv" id="hero-cv" role="img" aria-label="Animation: coloured photons travel into a cell; some bounce off, some are absorbed and some make the cell glow green"></canvas>
+    <ol class="howto">
+      <li><span class="n">1</span><span><b>Read “In plain words”.</b> Every topic starts with a two-minute explanation. No background needed.</span></li>
+      <li><span class="n">2</span><span><b>Follow the “Try it” steps.</b> Move the sliders and tap the buttons on the dark lab screens.</span></li>
+      <li><span class="n">3</span><span><b>Check yourself.</b> Each part ends with a quick quiz that marks your answers straight away.</span></li>
+    </ol>
+    <p class="meta">Mr. Asyraf Hakimi · Bachelor of Biomedical Electronic Engineering · UniMAP</p>
+  </div>
+</section>
+
+<main>
+<!-- ============ INTRO ============ -->
+<section class="part wrap" id="intro">
+  <div class="part-head">
+    <span class="part-num">00</span>
+    <h2>What is biophotonics?</h2>
+    <p>The big picture before we start.</p>
+  </div>
+  <div class="lessons">
+    <article class="lesson">
+      <div class="lesson-head"><span class="no">0.1</span><h3>Light as a medical tool</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Biophotonics is about using light to <b>see</b> inside the body, to <b>measure</b> what it is made of, and to <b>move or treat</b> cells. A pulse oximeter on your finger, an eye scan at the optician and a laser that corrects eyesight are all biophotonics.</p>
+      </div>
+      <div class="info">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Photonics plus biomedical science equals biophotonics, which is used to image, detect and manipulate">
+          <defs><linearGradient id="spg" x1="0" x2="1"><stop offset="0" stop-color="#6A3FB5"/><stop offset=".25" stop-color="#2F6FDB"/><stop offset=".5" stop-color="#2BA84A"/><stop offset=".72" stop-color="#E8D33A"/><stop offset="1" stop-color="#C9302C"/></linearGradient></defs>
+          <circle cx="250" cy="150" r="120" fill="#2F6FDB" fill-opacity=".16" stroke="#7FB8E6" stroke-width="2"/>
+          <circle cx="430" cy="150" r="120" fill="#C4561D" fill-opacity=".16" stroke="#F2A65A" stroke-width="2"/>
+          <text x="190" y="115" fill="#7FB8E6" font-family="IBM Plex Sans, sans-serif" font-size="22" font-weight="600" text-anchor="middle">Photonics</text>
+          <text x="190" y="145" fill="#9AABC2" font-family="IBM Plex Sans, sans-serif" font-size="15" text-anchor="middle">lasers · optics</text>
+          <text x="190" y="166" fill="#9AABC2" font-family="IBM Plex Sans, sans-serif" font-size="15" text-anchor="middle">detectors · fibres</text>
+          <text x="495" y="115" fill="#F2A65A" font-family="IBM Plex Sans, sans-serif" font-size="22" font-weight="600" text-anchor="middle">Biomedicine</text>
+          <text x="495" y="145" fill="#9AABC2" font-family="IBM Plex Sans, sans-serif" font-size="15" text-anchor="middle">cells · tissue</text>
+          <text x="495" y="166" fill="#9AABC2" font-family="IBM Plex Sans, sans-serif" font-size="15" text-anchor="middle">disease · treatment</text>
+          <text x="340" y="215" fill="#E7EEF8" font-family="Source Serif 4, serif" font-size="20" font-weight="700" text-anchor="middle">Bio-</text>
+          <text x="340" y="238" fill="#E7EEF8" font-family="Source Serif 4, serif" font-size="20" font-weight="700" text-anchor="middle">photonics</text>
+          <path d="M575 150 H640" stroke="url(#spg)" stroke-width="6" class="flow"/>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="20" font-weight="600">
+            <rect x="650" y="40" width="220" height="60" rx="12" fill="#121D31" stroke="#24324B"/><text x="760" y="77" fill="#E7EEF8" text-anchor="middle">Image</text>
+            <rect x="650" y="120" width="220" height="60" rx="12" fill="#121D31" stroke="#24324B"/><text x="760" y="157" fill="#E7EEF8" text-anchor="middle">Detect &amp; measure</text>
+            <rect x="650" y="200" width="220" height="60" rx="12" fill="#121D31" stroke="#24324B"/><text x="760" y="237" fill="#E7EEF8" text-anchor="middle">Manipulate &amp; treat</text>
+          </g>
+          <circle cx="652" cy="70" r="5" fill="#F2A65A" class="glow"/><circle cx="652" cy="150" r="5" fill="#F2A65A" class="glow"/><circle cx="652" cy="230" r="5" fill="#F2A65A" class="glow"/>
+        </svg>
+      </div>
+      <details><summary>Lecture detail: three definitions</summary>
+        <div class="dbody">
+          <p><b>1.</b> The science of generating and harnessing light (photons) to image, detect and manipulate biological materials (T. Huser, IEEE-LEOS, 2004).</p>
+          <p><b>2.</b> An interdisciplinary science studying the interaction of light with biological material, where “light” includes all radiant energy whose quantum unit is the photon (D. Matthews, 2007).</p>
+          <p><b>3.</b> The application of light and other forms of radiant energy to the life sciences.</p>
+          <p>Biophotonics is a two-way street: <b>photonics for biomedicine</b> (this lecture) and <b>biomaterials for photonics</b> (biological molecules used as optical materials for lasers, data storage and signal processing).</p>
+        </div>
+      </details>
+    </article>
+
+    <article class="lesson">
+      <div class="lesson-head"><span class="no">0.2</span><h3>Four ways it helps health care</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Light either <b>reads information out</b> of the body (imaging and diagnosis) or <b>puts energy in</b> (therapy). Engineers design the instruments for both.</p>
+      </div>
+      <div class="grid2">
+        <div class="mini"><span class="tag">Reads information</span><h4>Bioimaging</h4><p>Fluorescence and confocal microscopes, OCT scans of the retina, tracking single molecules.</p></div>
+        <div class="mini"><span class="tag">Reads information</span><h4>Diagnostics and sensing</h4><p>Pulse oximeters, flow cytometers, biosensors, “optical biopsy”.</p></div>
+        <div class="mini"><span class="tag">Puts energy in</span><h4>Light-activated therapy</h4><p>Photodynamic therapy for cancer, light-triggered drug release.</p></div>
+        <div class="mini"><span class="tag">Puts energy in</span><h4>Light-based devices</h4><p>Surgical lasers, artificial vision, tissue welding.</p></div>
+      </div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Biophotonics" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Biophotonics overview ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Photodynamic_therapy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Photodynamic therapy photos ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson">
+      <div class="lesson-head"><span class="no">0.3</span><h3>Learning outcomes</h3></div>
+      <ol class="steps">
+        <li>Explain the wave and particle nature of light, and what coherence means.</li>
+        <li>Describe how light interacts with tissue and apply the Beer–Lambert law.</li>
+        <li>Explain absorption, fluorescence and Raman spectroscopy and their instruments.</li>
+        <li>Compare optical imaging techniques, from phase contrast to OCT and super-resolution.</li>
+        <li>Explain how optical tweezers work and estimate the trapping force.</li>
+      </ol>
+    </article>
+  </div>
+</section>
+
+<!-- ============ PART 01 ============ -->
+<section class="part wrap" id="light">
+  <div class="part-head">
+    <span class="part-num">01</span>
+    <h2>The nature of light</h2>
+    <p>What light is, how its energy is counted, and why lasers behave differently from lamps.</p>
+  </div>
+  <div class="lessons">
+
+    <article class="lesson" id="spectrum">
+      <div class="lesson-head"><span class="no">1.1</span><h3>Colour, wavelength and photon energy</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Light travels as a wave. The distance from one wave crest to the next is the <b>wavelength (λ)</b>, measured in nanometres (nm). Our eyes see only 400–700 nm. Shorter waves (ultraviolet, UV) carry <b>more energy</b> in each packet of light; longer waves (infrared, IR) carry less. Medicine mostly uses UV, visible and near-infrared light.</p>
+      </div>
+      <div class="key"><span class="formula">E = hc / λ ≈ 1240 / λ(nm) eV</span><span class="what">Shorter wavelength → more energy per photon.</span></div>
+      <div class="sim" id="sim-spectrum">
+        <p class="sim-title">Simulation · Photon energy explorer</p>
+        <canvas class="cv m-43" role="img" aria-label="Spectrum bar with a marker, a moving wave whose length matches the chosen wavelength, and an energy meter compared with a chemical bond"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Wavelength</span><b id="sp-l">550 nm</b></div>
+          <div class="ro"><span>Region</span><b id="sp-band">Visible (green)</b></div>
+          <div class="ro"><span>Energy per photon</span><b id="sp-e">2.25 eV</b></div>
+          <div class="ro"><span>Can it break a C–C bond?</span><b id="sp-bond">No</b></div>
+        </div>
+        <p class="simnote" id="sp-use">Used for …</p>
+        <div class="controls">
+          <label class="ctl" for="sp-range"><span class="row"><span>Wavelength</span><output id="sp-range-out">550 nm</output></span>
+            <input type="range" class="spec" id="sp-range" min="200" max="1400" step="1" value="550"></label>
+          <div class="btns" id="sp-presets">
+            <button class="btn" data-l="193">193 nm · LASIK laser</button>
+            <button class="btn" data-l="260">260 nm · DNA</button>
+            <button class="btn" data-l="488">488 nm · blue laser</button>
+            <button class="btn" data-l="633">633 nm · red laser</button>
+            <button class="btn" data-l="940">940 nm · oximeter</button>
+          </div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Drag the slider slowly from left to right. Watch the wave get longer and the energy bar get shorter.</li>
+          <li>Tap <b>633 nm · red laser</b>. The energy (1.96 eV) stays below the orange bond line.</li>
+          <li>Tap <b>193 nm · LASIK laser</b>. Now one photon (6.42 eV) is above the bond line, so it can break bonds and remove tissue.</li>
+          <li>Find where the colour disappears at each end. Those parts are UV and infrared, invisible to us.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>What light does to tissue depends on the energy of <b>each photon</b>, not just on how bright it is. A very bright red laser still cannot break bonds one photon at a time.</p></div>
+      <details><summary>Lecture detail: the spectrum and the worked example</summary>
+        <div class="dbody">
+          <div class="tbl"><table>
+            <tr><th>Band</th><th>Range</th><th>In biomedicine</th></tr>
+            <tr><td>UV</td><td>200–400 nm</td><td>3–6 eV per photon. Absorbed by DNA (260 nm) and proteins (280 nm). Assays, sterilisation, photoablation.</td></tr>
+            <tr><td>Visible</td><td>400–700 nm</td><td>Strongly absorbed by haemoglobin and melanin. Microscopy, fluorescent labels, endoscopy.</td></tr>
+            <tr><td>Near-IR</td><td>700–1400 nm</td><td>Goes deepest into tissue. Pulse oximetry, OCT, two-photon microscopy, optical tweezers.</td></tr>
+          </table></div>
+          <p><b>Worked example.</b> He–Ne laser, 633 nm: E = (6.626 × 10⁻³⁴ × 3.00 × 10⁸) / 633 × 10⁻⁹ = 3.14 × 10⁻¹⁹ J = 1.96 eV. ArF excimer laser, 193 nm: E = 1.03 × 10⁻¹⁸ J = 6.42 eV. A C–C bond is about 3.6 eV, so only the 193 nm photon can break it directly (photoablation, used in LASIK).</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Electromagnetic_spectrum" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Electromagnetic spectrum ↗</a>
+        <a href="https://en.wikipedia.org/wiki/LASIK" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>LASIK eye surgery ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="waveparticle">
+      <div class="lesson-head"><span class="no">1.2</span><h3>A wave and a stream of photons</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Light behaves like <b>ripples on a pond</b> (a wave) and also like <b>raindrops</b> (separate packets of energy called photons). Both pictures are true. We use the wave picture to explain focusing and blurring in microscopes, and the photon picture to explain how molecules soak up light.</p>
+      </div>
+      <div class="grid2">
+        <div class="info">
+          <svg viewBox="0 0 400 220" role="img" aria-label="Animated ripples spreading from a point, representing light as a wave">
+            <circle cx="200" cy="110" r="4" fill="#7FB8E6"/>
+            <circle cx="200" cy="110" r="4" fill="none" stroke="#7FB8E6" stroke-width="3" class="rip"/>
+            <circle cx="200" cy="110" r="4" fill="none" stroke="#7FB8E6" stroke-width="3" class="rip d2"/>
+            <circle cx="200" cy="110" r="4" fill="none" stroke="#7FB8E6" stroke-width="3" class="rip d3"/>
+            <text x="200" y="205" fill="#E7EEF8" font-family="IBM Plex Sans, sans-serif" font-size="18" font-weight="600" text-anchor="middle">Wave: c = λν</text>
+          </svg>
+          <p class="cap">Explains interference, diffraction and polarisation → microscope resolution, OCT.</p>
+        </div>
+        <div class="info">
+          <svg viewBox="0 0 400 220" role="img" aria-label="Animated drops falling, representing light as separate photons">
+            <g fill="#F2A65A">
+              <circle cx="120" cy="70" r="7" class="dropa"/>
+              <circle cx="180" cy="60" r="7" class="dropa d2"/>
+              <circle cx="240" cy="75" r="7" class="dropa d3"/>
+              <circle cx="300" cy="65" r="7" class="dropa d4"/>
+            </g>
+            <rect x="80" y="150" width="260" height="10" rx="5" fill="#24324B"/>
+            <text x="200" y="205" fill="#E7EEF8" font-family="IBM Plex Sans, sans-serif" font-size="18" font-weight="600" text-anchor="middle">Photons: E = hν, p = h/λ</text>
+          </svg>
+          <p class="cap">Explains absorption, emission and photodetectors → spectroscopy, optical tweezers.</p>
+        </div>
+      </div>
+      <details><summary>Lecture detail</summary>
+        <div class="dbody">
+          <p>As a wave: oscillating electric (E) and magnetic (B) fields, perpendicular to each other and to the direction of travel. c = 3.00 × 10⁸ m/s in vacuum; in a medium v = c/n (tissue n ≈ 1.35–1.55).</p>
+          <p>As photons: energy arrives in discrete packets. E = hν = hc/λ, momentum p = h/λ, Planck’s constant h = 6.626 × 10⁻³⁴ J·s.</p>
+        </div>
+      </details>
+    </article>
+
+    <article class="lesson" id="coherence">
+      <div class="lesson-head"><span class="no">1.3</span><h3>Coherence: waves marching in step</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Coherent light is like <b>soldiers marching in step</b>: all the waves rise and fall together. A laser does this, so it can be focused to a tiny spot. A lamp is like a crowd walking in all directions: its waves are out of step. Surprisingly, light that is only briefly in step is exactly what OCT eye scanners need.</p>
+      </div>
+      <div class="key"><span class="formula">L ≈ λ² / Δλ</span><span class="what">Coherence length: how far the waves stay in step. A narrow colour range (small Δλ) gives a long L.</span></div>
+      <div class="sim" id="sim-coh">
+        <p class="sim-title">Simulation · Laser, LED or lamp?</p>
+        <canvas class="cv m-tall" role="img" aria-label="Six light waves from the chosen source, with their combined wave shown at the bottom"></canvas>
+        <div class="btns" id="coh-modes">
+          <button class="btn on" data-m="laser">Laser</button>
+          <button class="btn" data-m="led">LED</button>
+          <button class="btn" data-m="lamp">Lamp</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Colour spread Δλ</span><b id="coh-dl">0.002 nm</b></div>
+          <div class="ro"><span>Coherence length L</span><b id="coh-L">0.2 m</b></div>
+          <div class="ro"><span>Waves in step?</span><b id="coh-step">Yes, always</b></div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Start with <b>Laser</b>. All six waves are the same colour and line up, so the combined wave at the bottom is big and steady.</li>
+          <li>Tap <b>LED</b>. The colours are nearly the same, but the waves drift out of step. The combined wave shrinks and wobbles.</li>
+          <li>Tap <b>Lamp</b>. Every colour is mixed and nothing lines up. Compare the coherence length for each source.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>The laser stays in step for about 20 cm; the LED for only about 20 µm. OCT uses that short distance on purpose to slice tissue into thin depth layers (see 4.7).</p></div>
+      <details><summary>Lecture detail: sources and the worked example</summary>
+        <div class="dbody">
+          <p><b>Temporal coherence</b> is set by the colour spread: one frequency (narrow Δλ) stays in phase along the beam. <b>Spatial coherence</b> is a constant phase across the beam, so it stays narrow and focuses to a small spot.</p>
+          <div class="tbl"><table>
+            <tr><th>Source</th><th>Δλ</th><th>Temporal</th><th>Spatial</th><th>Typical use</th></tr>
+            <tr><td>Halogen lamp</td><td>hundreds of nm</td><td>very low</td><td>low</td><td>microscope illumination</td></tr>
+            <tr><td>LED</td><td>≈ 20–50 nm</td><td>low</td><td>low</td><td>pulse oximeter</td></tr>
+            <tr><td>Superluminescent diode</td><td>≈ 20–100 nm</td><td>low, by design</td><td>high</td><td>OCT source</td></tr>
+            <tr><td>Laser</td><td>≈ 0.001–1 nm</td><td>high</td><td>high</td><td>confocal, tweezers, surgery</td></tr>
+          </table></div>
+          <p><b>Worked example.</b> Near-IR LED, λ = 850 nm, Δλ = 50 nm: L = 850²/50 = 14 450 nm ≈ 14 µm. He–Ne laser, λ = 633 nm, Δλ = 0.002 nm: L ≈ 2 × 10⁸ nm ≈ 0.2 m. OCT depth resolution ≈ 0.44 λ²/Δλ ≈ 6 µm for this LED.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Coherence_(physics)" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Coherence diagrams ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Laser" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Laser photos ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="dual">
+      <div class="lesson-head"><span class="no">1.4</span><h3>Matter can act like a wave too</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Tiny particles such as electrons also behave like waves. A fast electron has a wavelength thousands of times shorter than light. That is why an <b>electron microscope</b> can see far smaller details than a light microscope. Molecules also hold energy only in fixed “steps”, which is why each one absorbs only certain colours.</p>
+      </div>
+      <div class="key"><span class="formula">λ = h / mv</span><span class="what">de Broglie wavelength. For an electron: λ ≈ 1.226 / √V nm.</span></div>
+      <div class="sim" id="sim-dual">
+        <p class="sim-title">Mini calculator · Electron wavelength</p>
+        <div class="controls">
+          <label class="ctl" for="du-range"><span class="row"><span>Accelerating voltage</span><output id="du-range-out">100 V</output></span>
+            <input type="range" id="du-range" min="0" max="3" step="0.01" value="1"></label>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Electron wavelength</span><b id="du-l">0.123 nm</b></div>
+          <div class="ro"><span>Green light</span><b>500 nm</b></div>
+          <div class="ro"><span>Shorter than green light by</span><b id="du-x">4 080×</b></div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Start at 100 V: the electron wavelength is about 0.12 nm, roughly 4000 times shorter than green light.</li>
+          <li>Slide the voltage up. Faster electrons have even shorter wavelengths, so they can show even finer detail.</li>
+        </ol>
+      </div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Electron_microscope" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Electron microscope images ↗</a>
+      </div>
+    </article>
+
+    <div class="quiz" data-quiz="light"></div>
+  </div>
+</section>
+
+<!-- ============ PART 02 ============ -->
+<section class="part wrap" id="tissue">
+  <div class="part-head">
+    <span class="part-num">02</span>
+    <h2>Light–tissue interaction</h2>
+    <p>What happens to a photon after it enters tissue, and how we put numbers on it.</p>
+  </div>
+  <div class="lessons">
+
+    <article class="lesson" id="five">
+      <div class="lesson-head"><span class="no">2.1</span><h3>Five things light can do in tissue</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>When light hits skin it can <b>bounce off</b> (reflection), <b>bend</b> (refraction), be <b>soaked up</b> (absorption), <b>bounce around inside</b> (scattering) or <b>pass straight through</b> (transmission). Every optical medical device measures some mix of these five.</p>
+      </div>
+      <div class="sim">
+        <p class="sim-title">Interactive diagram · tap a process</p>
+        <svg viewBox="0 0 800 420" id="ix-svg" role="img" aria-label="Light hitting tissue: reflection, refraction, absorption, scattering and transmission">
+          <defs>
+            <marker id="mo" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F2A65A"/></marker>
+            <marker id="mb" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7FB8E6"/></marker>
+            <marker id="mg" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#C9D5E6"/></marker>
+          </defs>
+          <rect x="330" y="30" width="450" height="370" rx="14" fill="#5A3B33"/>
+          <rect x="330" y="30" width="450" height="36" rx="14" fill="#7A5345"/>
+          <text x="760" y="56" fill="#F3DCCB" font-family="IBM Plex Sans, sans-serif" font-size="18" text-anchor="end">tissue</text>
+          <line x1="40" y1="110" x2="326" y2="208" stroke="#F2A65A" stroke-width="7" marker-end="url(#mo)" class="flow"/>
+          <text x="40" y="96" fill="#F2A65A" font-family="IBM Plex Sans, sans-serif" font-size="18" font-weight="600">incident light</text>
+          <g class="ix-g" data-ix="1"><line x1="330" y1="210" x2="70" y2="330" stroke="#7FB8E6" stroke-width="5" marker-end="url(#mb)" class="flow"/><circle cx="160" cy="300" r="18" fill="#13213A" stroke="#7FB8E6" stroke-width="2"/><text x="160" y="307" fill="#E7EEF8" font-family="IBM Plex Mono, monospace" font-size="18" text-anchor="middle">1</text></g>
+          <g class="ix-g" data-ix="2"><line x1="330" y1="210" x2="470" y2="250" stroke="#F2A65A" stroke-width="6" class="flow"/><circle cx="395" cy="268" r="18" fill="#13213A" stroke="#F2A65A" stroke-width="2"/><text x="395" y="275" fill="#E7EEF8" font-family="IBM Plex Mono, monospace" font-size="18" text-anchor="middle">2</text></g>
+          <g class="ix-g" data-ix="3"><circle cx="505" cy="300" r="26" fill="#F2A65A" opacity=".35" class="glow"/><circle cx="505" cy="300" r="10" fill="#F2A65A"/><circle cx="505" cy="350" r="18" fill="#13213A" stroke="#F2A65A" stroke-width="2"/><text x="505" y="357" fill="#E7EEF8" font-family="IBM Plex Mono, monospace" font-size="18" text-anchor="middle">3</text></g>
+          <g class="ix-g" data-ix="4"><polyline points="470,250 550,165 615,290 690,190 740,240" fill="none" stroke="#C9D5E6" stroke-width="4" marker-end="url(#mg)" class="flow"/><circle cx="615" cy="150" r="18" fill="#13213A" stroke="#C9D5E6" stroke-width="2"/><text x="615" y="157" fill="#E7EEF8" font-family="IBM Plex Mono, monospace" font-size="18" text-anchor="middle">4</text></g>
+          <g class="ix-g" data-ix="5"><line x1="470" y1="250" x2="790" y2="360" stroke="#F2A65A" stroke-width="5" opacity=".7" marker-end="url(#mo)" class="flow"/><circle cx="700" cy="370" r="18" fill="#13213A" stroke="#F2A65A" stroke-width="2"/><text x="700" y="377" fill="#E7EEF8" font-family="IBM Plex Mono, monospace" font-size="18" text-anchor="middle">5</text></g>
+        </svg>
+        <div class="btns" id="ix-btns">
+          <button class="btn on" data-ix="0">Show all</button>
+          <button class="btn" data-ix="1">1 Reflection</button>
+          <button class="btn" data-ix="2">2 Refraction</button>
+          <button class="btn" data-ix="3">3 Absorption</button>
+          <button class="btn" data-ix="4">4 Scattering</button>
+          <button class="btn" data-ix="5">5 Transmission</button>
+        </div>
+        <p class="simnote" id="ix-text">Tap a process to highlight it. In real tissue, all five happen at the same time.</p>
+      </div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Tissue_optics" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Tissue optics ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="window">
+      <div class="lesson-head"><span class="no">2.2</span><h3>Light-eating molecules and the optical window</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Tissue contains molecules that soak up light, called <b>chromophores</b>. Blood (haemoglobin) and skin pigment (melanin) soak up blue and green light. Water soaks up infrared beyond about 1350 nm. Between about <b>650 and 1350 nm</b> very little is absorbed, so light travels deepest. This gap is the <b>optical window</b>, and it is why a torch makes your fingertip glow red.</p>
+      </div>
+      <div class="sim" id="sim-skin">
+        <p class="sim-title">Simulation · How deep does light go into skin?</p>
+        <canvas class="cv m-tall" role="img" aria-label="Skin cross-section with photons entering from the top and an absorption chart showing haemoglobin, melanin and water"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Wavelength</span><b id="sk-l">450 nm</b></div>
+          <div class="ro"><span>Main absorber</span><b id="sk-abs">Haemoglobin</b></div>
+          <div class="ro"><span>Typical depth (schematic)</span><b id="sk-d">0.4 mm</b></div>
+          <div class="ro"><span>In the optical window?</span><b id="sk-win">No</b></div>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="sk-range"><span class="row"><span>Wavelength</span><output id="sk-range-out">450 nm</output></span>
+            <input type="range" class="spec" id="sk-range" min="300" max="1400" step="5" value="450"></label>
+          <div class="btns" id="sk-presets">
+            <button class="btn" data-l="450">450 nm blue</button>
+            <button class="btn" data-l="550">550 nm green</button>
+            <button class="btn" data-l="660">660 nm red</button>
+            <button class="btn" data-l="940">940 nm near-IR</button>
+            <button class="btn" data-l="1400">1400 nm IR</button>
+          </div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Tap <b>450 nm blue</b>. The photons are soaked up near the surface, mainly by blood and melanin.</li>
+          <li>Tap <b>660 nm red</b>, then <b>940 nm near-IR</b>. The photons now reach the deeper dermis and fat. You are inside the shaded optical window on the chart.</li>
+          <li>Tap <b>1400 nm IR</b>. Water takes over and the light stops near the surface again.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>Pulse oximeters (660 and 940 nm), brain oxygen monitors (NIRS), photodynamic therapy and two-photon microscopes all choose wavelengths inside the window. The depths shown are illustrations, not measured values.</p></div>
+      <details><summary>Lecture detail: chromophores table</summary>
+        <div class="dbody">
+          <div class="tbl"><table>
+            <tr><th>Chromophore</th><th>Strongest absorption</th><th>Why it matters</th></tr>
+            <tr><td>DNA</td><td>UV, peak ≈ 260 nm</td><td>DNA quantification (A260); UV damage</td></tr>
+            <tr><td>Proteins (Trp, Tyr)</td><td>UV, peak ≈ 280 nm</td><td>Protein quantification (A280)</td></tr>
+            <tr><td>Haemoglobin (HbO₂, Hb)</td><td>Visible: 415 nm, 540–580 nm</td><td>Blood looks red; oximetry; vascular lasers</td></tr>
+            <tr><td>Melanin</td><td>UV to visible, falls with λ</td><td>Skin colour; pigmented-lesion lasers</td></tr>
+            <tr><td>Water</td><td>IR: 1450, 1940, 2940 nm</td><td>Er:YAG (2940 nm) and CO₂ (10.6 µm) cutting</td></tr>
+            <tr><td>Lipids</td><td>NIR: ≈ 1210 and 1720 nm</td><td>Lipid imaging; atherosclerotic plaque</td></tr>
+          </table></div>
+          <p>Values from Jacques (2013), Phys. Med. Biol. 58, R37.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Near-infrared_window_in_biological_tissue" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Near-infrared window ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Chromophore" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Chromophores ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="beer">
+      <div class="lesson-head"><span class="no">2.3</span><h3>Beer–Lambert law: more stuff, less light</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Think of tea: the stronger the tea, or the wider the cup, the less light gets through. <b>Absorbance (A)</b> grows in a straight line with the <b>concentration (c)</b> and the <b>path length (l)</b>. So if you measure A, you can work out how much of a substance is in the sample.</p>
+      </div>
+      <div class="key"><span class="formula">A = log₁₀(I₀/I) = ε c l</span><span class="what">I₀ = light in, I = light out, ε = how strongly the molecule absorbs at this wavelength.</span></div>
+      <div class="sim" id="sim-beer">
+        <p class="sim-title">Simulation · Virtual spectrophotometer cuvette</p>
+        <canvas class="cv m-tall" role="img" aria-label="Photons pass through a cuvette; some are absorbed; a detector bar and a graph of absorbance versus concentration"></canvas>
+        <div class="btns" id="be-mol">
+          <button class="btn on" data-m="nadh">NADH at 340 nm</button>
+          <button class="btn" data-m="bsa">Protein (BSA) at 280 nm</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Absorbance A</span><b id="be-a">0.311</b></div>
+          <div class="ro"><span>Light through, T</span><b id="be-t">48.9 %</b></div>
+          <div class="ro"><span>Calculation</span><b id="be-calc">6220 × 50 µM × 1 cm</b></div>
+        </div>
+        <div class="controls two">
+          <label class="ctl" for="be-c"><span class="row"><span>Concentration c</span><output id="be-c-out">50 µM</output></span>
+            <input type="range" id="be-c" min="0" max="100" step="1" value="50"></label>
+          <label class="ctl" for="be-l"><span class="row"><span>Path length l</span><output id="be-l-out">1.0 cm</output></span>
+            <input type="range" id="be-l" min="0.2" max="2" step="0.1" value="1"></label>
+        </div>
+        <div class="btns"><button class="btn primary" id="be-ex">Load worked example (A = 0.311)</button></div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Set the concentration to 0. Every photon reaches the detector (T = 100 %, A = 0).</li>
+          <li>Set it to 25 µM, then 50 µM. A doubles exactly (0.156 → 0.311): the graph is a straight line.</li>
+          <li>Keep 50 µM and change the path length to 2 cm. A doubles again.</li>
+          <li>Switch to <b>Protein (BSA)</b>. It absorbs about 7 times more strongly, so very little light gets through.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>A = 1 means only 10 % of the light gets through; A = 2 means 1 %. Clinical analysers measure NADH at 340 nm this way to run enzyme tests such as LDH and ALT.</p></div>
+      <details><summary>Lecture detail: symbols and the worked example</summary>
+        <div class="dbody">
+          <p>A = absorbance (no unit); I₀, I = incident and transmitted intensity; T = I/I₀, so A = −log₁₀T; ε = molar absorptivity (L mol⁻¹ cm⁻¹), depends on λ; c = concentration (mol L⁻¹); l = path length (cm).</p>
+          <p><b>Worked example.</b> NADH in a 1 cm cuvette reads A = 0.311 at 340 nm; ε₃₄₀ = 6220 L mol⁻¹ cm⁻¹. (a) c = A/(εl) = 0.311/(6220 × 1) = 5.0 × 10⁻⁵ mol L⁻¹ = 50 µM. (b) T = 10^(−0.311) = 0.489 → 48.9 % transmitted.</p>
+          <p><b>In tissue</b>, scattering removes light too: I = I₀ e^(−μt z), with μt = μa + μs. Plain Beer–Lambert holds only for clear, non-scattering samples.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Beer–Lambert law ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Cuvette" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Cuvettes ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="scatter">
+      <div class="lesson-head"><span class="no">2.4</span><h3>Scattering: light playing pinball</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Scattering is light bouncing off tiny structures and changing direction. <b>Very small particles</b> scatter blue light much more than red (that is why the sky is blue) and send light in all directions. <b>Particles about the size of the wavelength</b>, like cell nuclei and mitochondria, scatter mostly forwards. In tissue, scattering usually limits how deep light can go.</p>
+      </div>
+      <div class="sim" id="sim-scat">
+        <p class="sim-title">Simulation · Rayleigh vs Mie scattering</p>
+        <canvas class="cv m-tall" role="img" aria-label="A beam of blue and red photons hits a cloud of particles and scatters; an inset shows which directions they go"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Particle size</span><b id="sc-size">Much smaller than λ</b></div>
+          <div class="ro"><span>Blue scattered</span><b id="sc-b">–</b></div>
+          <div class="ro"><span>Red scattered</span><b id="sc-r">–</b></div>
+          <div class="ro"><span>Blue ÷ red</span><b id="sc-ratio">5.9×</b></div>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="sc-range"><span class="row"><span>Particle size (compared with the wavelength)</span><output id="sc-range-out">tiny</output></span>
+            <input type="range" id="sc-range" min="0" max="1" step="0.01" value="0"></label>
+          <div class="btns" id="sc-col">
+            <button class="btn on" data-c="both">Blue + red</button>
+            <button class="btn" data-c="blue">Blue only</button>
+            <button class="btn" data-c="red">Red only</button>
+          </div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Keep the size slider on the left (tiny particles). Blue photons scatter in every direction; most red ones go straight through.</li>
+          <li>Slide the size to the right. Scattering now points mostly forwards (watch the inset), and blue and red scatter almost equally.</li>
+          <li>Compare the “Blue ÷ red” number at both ends: about 5.9× for tiny particles, close to 1× for large ones.</li>
+        </ol>
+      </div>
+      <details><summary>Lecture detail: types of scattering</summary>
+        <div class="dbody">
+          <div class="tbl"><table>
+            <tr><th>Type</th><th>Scatterer</th><th>λ dependence</th><th>Features and uses</th></tr>
+            <tr><td>Rayleigh · elastic</td><td>Particles ≪ λ: membranes, collagen fibrils</td><td>∝ λ⁻⁴</td><td>Forward = backward; blue ≈ 5.9× red (450 vs 700 nm)</td></tr>
+            <tr><td>Mie · elastic</td><td>Particles ≈ λ: nuclei, mitochondria, cells</td><td>weak</td><td>Mostly forward; dominant in tissue</td></tr>
+            <tr><td>Brillouin · inelastic</td><td>Acoustic phonons</td><td>tiny shift (GHz)</td><td>Maps tissue stiffness</td></tr>
+            <tr><td>Raman · inelastic</td><td>Molecular vibrations</td><td>shift ≈ 200–3500 cm⁻¹</td><td>Chemical fingerprint (see 3.5)</td></tr>
+          </table></div>
+          <p>Elastic: the scattered photon keeps its frequency. Inelastic: the frequency changes because energy is exchanged.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Rayleigh_scattering" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Rayleigh scattering ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Mie_scattering" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Mie scattering ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="effects">
+      <div class="lesson-head"><span class="no">2.5</span><h3>What absorbed light does to tissue</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Absorbed light energy has to go somewhere. It can come back out as a new colour (<b>fluorescence</b>), start a <b>chemical reaction</b>, <b>heat</b> the tissue, or, with very short and intense pulses, <b>tear molecules apart</b>. Doctors choose the effect by choosing the wavelength, the power and how long each pulse lasts. Chapter 3 covers this in detail.</p>
+      </div>
+      <div class="info">
+        <svg viewBox="0 0 900 170" role="img" aria-label="Scale of exposure time from seconds to femtoseconds: photochemical and thermal effects need long exposures; photoablation, plasma ablation and photodisruption use short intense pulses">
+          <defs><linearGradient id="tg" x1="0" x2="1"><stop offset="0" stop-color="#2F6FDB"/><stop offset="1" stop-color="#C9302C"/></linearGradient></defs>
+          <rect x="40" y="70" width="820" height="12" rx="6" fill="url(#tg)"/>
+          <g font-family="IBM Plex Mono, monospace" font-size="15" fill="#9AABC2" text-anchor="middle">
+            <text x="60" y="110">seconds</text><text x="250" y="110">ms</text><text x="450" y="110">ns</text><text x="640" y="110">ps</text><text x="830" y="110">fs</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="16" font-weight="600" fill="#E7EEF8" text-anchor="middle">
+            <text x="110" y="50">Photochemical</text><text x="260" y="50">Thermal</text><text x="450" y="50">Photoablation</text><text x="700" y="50">Plasma · disruption</text>
+          </g>
+          <circle cx="110" cy="76" r="9" fill="#E7EEF8" class="glow"/><circle cx="260" cy="76" r="9" fill="#E7EEF8" class="glow"/><circle cx="450" cy="76" r="9" fill="#E7EEF8" class="glow"/><circle cx="700" cy="76" r="9" fill="#E7EEF8" class="glow"/>
+          <text x="450" y="150" font-family="IBM Plex Sans, sans-serif" font-size="16" fill="#9AABC2" text-anchor="middle">Long, gentle exposure ←→ short, very intense pulse</text>
+        </svg>
+      </div>
+      <div class="grid3">
+        <div class="mini"><span class="tag">Gives light back</span><h4>Fluorescence</h4><p>Energy re-emitted as a new colour. Tissue’s own glow helps diagnosis.</p></div>
+        <div class="mini"><span class="tag">Low power, seconds–minutes</span><h4>Photochemical</h4><p>Excited molecules react. Used in photodynamic therapy.</p></div>
+        <div class="mini"><span class="tag">CW or ≈ ms pulses</span><h4>Thermal</h4><p>Heat coagulates, vaporises or cuts tissue.</p></div>
+        <div class="mini"><span class="tag">UV, 10–100 ns</span><h4>Photoablation</h4><p>High-energy UV photons break bonds directly. Example: LASIK.</p></div>
+        <div class="mini"><span class="tag">100 fs – 10 ns</span><h4>Plasma-induced ablation</h4><p>Intense pulses ionise tissue and remove it very precisely.</p></div>
+        <div class="mini"><span class="tag">Shock waves</span><h4>Photodisruption</h4><p>Expanding plasma breaks tissue apart. Example: posterior capsulotomy.</p></div>
+      </div>
+    </article>
+
+    <div class="quiz" data-quiz="tissue"></div>
+  </div>
+</section>
+
+<!-- ============ PART 03 ============ -->
+<section class="part wrap" id="spectroscopy">
+  <div class="part-head">
+    <span class="part-num">03</span>
+    <h2>Spectroscopy</h2>
+    <p>Splitting light into its wavelengths to find out what a sample contains.</p>
+  </div>
+  <div class="lessons">
+
+    <article class="lesson" id="jablonski">
+      <div class="lesson-head"><span class="no">3.1</span><h3>Absorption, emission and fluorescence</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>A molecule can only hold certain amounts of energy, like <b>steps on a staircase</b>. It absorbs a photon only if the photon’s energy matches a step. It then loses a little energy as heat and drops back down, sending out a new photon. The new photon has a little less energy, so its colour shifts towards red: <b>blue in, green out</b>. This is fluorescence, and the colour shift is the <b>Stokes shift</b>.</p>
+      </div>
+      <div class="key"><span class="formula">ΔE = hν</span><span class="what">A photon is absorbed only when its energy equals the gap between two energy levels.</span></div>
+      <div class="sim" id="sim-jab">
+        <p class="sim-title">Simulation · Jablonski diagram in slow motion</p>
+        <canvas class="cv m-43" role="img" aria-label="Energy levels S0, S1 and T1; an electron is lifted by a blue photon, relaxes, then drops and emits a green photon"></canvas>
+        <p class="simnote" id="jb-step">Tap “Shine blue light” to start.</p>
+        <div class="readouts">
+          <div class="ro"><span>Light in</span><b id="jb-in">470 nm (blue)</b></div>
+          <div class="ro"><span>Light out</span><b id="jb-out">–</b></div>
+          <div class="ro"><span>Real-life time</span><b id="jb-time">–</b></div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="jb-go">Shine blue light</button>
+          <button class="btn" id="jb-auto">Auto-repeat: off</button>
+        </div>
+        <label class="chk" for="jb-phos"><input type="checkbox" id="jb-phos"> Allow the rare slow path (phosphorescence)</label>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Tap <b>Shine blue light</b>. Watch the electron jump up from S₀ to S₁.</li>
+          <li>See it slide down a little (energy lost as heat), then fall back and send out a <b>green</b> photon.</li>
+          <li>Tick <b>Allow the rare slow path</b> and run it a few times. Sometimes the electron crosses to T₁ and glows orange much later: phosphorescence, the “glow in the dark”.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>The out-going light always has a longer wavelength than the light coming in. Microscopes use this colour difference to block the blue light and keep only the glow.</p></div>
+      <details><summary>Lecture detail: ways to reach the excited state and timescales</summary>
+        <div class="dbody">
+          <p>Absorbing a photon → photoluminescence (fluorescence, phosphorescence). A chemical reaction → chemiluminescence (e.g. luciferase bioluminescence assays). Heat → thermal emission (flame emission for Na⁺ and K⁺).</p>
+          <div class="tbl"><table>
+            <tr><th>Step</th><th>Typical time</th></tr>
+            <tr><td>Absorption</td><td>≈ 10⁻¹⁵ s</td></tr>
+            <tr><td>Vibrational relaxation</td><td>10⁻¹² – 10⁻¹⁰ s</td></tr>
+            <tr><td>Fluorescence lifetime</td><td>10⁻⁹ – 10⁻⁷ s</td></tr>
+            <tr><td>Phosphorescence</td><td>10⁻⁶ s to seconds</td></tr>
+          </table></div>
+          <p>Example: fluorescein is excited at 494 nm and emits at 521 nm.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Jablonski_diagram" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Jablonski diagram ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Fluorescence" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Fluorescence photos ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="spectro">
+      <div class="lesson-head"><span class="no">3.2</span><h3>Inside a spectrophotometer</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>A spectrophotometer shines <b>one colour at a time</b> through a sample and measures how much light gets through. Plotting absorbance against wavelength gives a <b>spectrum</b>: a fingerprint. The position of the peak tells you <b>what</b> is in the tube; with Beer–Lambert, the height tells you <b>how much</b>.</p>
+      </div>
+      <div class="sim" id="sim-spec">
+        <p class="sim-title">Simulation · Scan a sample</p>
+        <canvas class="cv m-tall" role="img" aria-label="Light source, grating, sample and detector, above a graph that draws absorbance against wavelength during a scan"></canvas>
+        <div class="btns" id="spc-samples">
+          <button class="btn on" data-s="dna">DNA</button>
+          <button class="btn" data-s="protein">Protein</button>
+          <button class="btn" data-s="nadh">NADH</button>
+          <button class="btn" data-s="hb">Haemoglobin</button>
+          <button class="btn" data-s="blank">Water (blank)</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Wavelength now</span><b id="spc-l">–</b></div>
+          <div class="ro"><span>Absorbance now</span><b id="spc-a">–</b></div>
+          <div class="ro"><span>Result</span><b id="spc-res">Press Scan</b></div>
+        </div>
+        <div class="btns"><button class="btn primary" id="spc-go">Scan 220 → 700 nm</button></div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>With <b>DNA</b> selected, tap <b>Scan</b>. The beam changes colour as the grating picks each wavelength. A peak appears at 260 nm.</li>
+          <li>Choose <b>Protein</b> and scan again. The peak moves to 280 nm, so a lab can tell DNA and protein apart.</li>
+          <li>Try <b>Haemoglobin</b>: a very tall peak at 415 nm plus two small ones at 541 and 577 nm. That is why blood looks red.</li>
+          <li>Scan the <b>Water (blank)</b>. It is flat: this reference reading is subtracted from every sample.</li>
+        </ol>
+      </div>
+      <details><summary>Lecture detail: the five blocks and the detectors</summary>
+        <div class="dbody">
+          <p><b>Light source</b> (deuterium lamp for UV, tungsten-halogen for visible–NIR, LEDs, lasers) → <b>wavelength selector</b> (prism or diffraction grating with slits, or filters) → <b>sample</b> (1 cm cuvette; quartz below 350 nm) → <b>detector</b> → <b>processing</b> (amplifier, ADC, computes A = log₁₀(I₀/I) against a blank). A double-beam design measures sample and reference alternately to cancel lamp drift.</p>
+          <div class="tbl"><table>
+            <tr><th>Transducer</th><th>Class</th><th>Range</th><th>Output</th></tr>
+            <tr><td>Phototube</td><td>photon</td><td>200–1000 nm</td><td>current</td></tr>
+            <tr><td>Photomultiplier</td><td>photon</td><td>110–1000 nm</td><td>current</td></tr>
+            <tr><td>Si photodiode</td><td>photon</td><td>250–1100 nm</td><td>current</td></tr>
+            <tr><td>Photoconductor</td><td>photon</td><td>750–6000 nm</td><td>change in resistance</td></tr>
+            <tr><td>Photovoltaic cell</td><td>photon</td><td>400–5000 nm</td><td>current or voltage</td></tr>
+            <tr><td>Thermocouple</td><td>thermal</td><td>0.8–40 µm</td><td>voltage</td></tr>
+            <tr><td>Thermistor</td><td>thermal</td><td>0.8–40 µm</td><td>change in resistance</td></tr>
+            <tr><td>Pneumatic</td><td>thermal</td><td>0.8–1000 µm</td><td>membrane displacement</td></tr>
+            <tr><td>Pyroelectric</td><td>thermal</td><td>0.3–1000 µm</td><td>current</td></tr>
+          </table></div>
+          <p>Source: Harvey, Analytical Chemistry 2.1 (LibreTexts). The spectra in the simulation are simplified shapes.</p>
+          <div class="tbl"><table>
+            <tr><th>Technique</th><th>What it reveals</th><th>Biomedical example</th></tr>
+            <tr><td>UV–Vis absorption</td><td>Concentration</td><td>DNA (A260), protein (A280), clinical analysers</td></tr>
+            <tr><td>Fluorescence</td><td>Labelled or native molecules</td><td>Immunoassays, flow cytometry, cancer screening</td></tr>
+            <tr><td>Infrared (FTIR)</td><td>Chemical bonds</td><td>Spectral histopathology</td></tr>
+            <tr><td>Raman</td><td>Molecular fingerprint, no label</td><td>Tumour margins, single-cell analysis</td></tr>
+            <tr><td>Near-IR (NIRS)</td><td>Tissue oxygenation</td><td>Brain and muscle oxygen monitoring</td></tr>
+          </table></div>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Spectrophotometry" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Spectrophotometers ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Photomultiplier_tube" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Photomultiplier tube ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="oximeter">
+      <div class="lesson-head"><span class="no">3.3</span><h3>Clinical example: the pulse oximeter</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>The clip on your finger shines <b>red (660 nm)</b> and <b>infrared (940 nm)</b> light through it. Blood full of oxygen absorbs more infrared; blood low in oxygen absorbs more red. With every heartbeat a little more blood squeezes into the finger, so the signal pulses. The device compares the red and infrared pulses to estimate the <b>oxygen saturation (SpO₂)</b>.</p>
+      </div>
+      <div class="sim" id="sim-oxi">
+        <p class="sim-title">Simulation · Pulse oximeter</p>
+        <canvas class="cv m-tall" role="img" aria-label="A finger between red and infrared LEDs and a photodiode, with two pulsing signal traces"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>SpO₂</span><b id="ox-s" class="ok">98 %</b></div>
+          <div class="ro"><span>Heart rate</span><b id="ox-hr">72 bpm</b></div>
+          <div class="ro"><span>Ratio R (red ÷ IR pulse)</span><b id="ox-r">0.48</b></div>
+          <div class="ro"><span>Status</span><b id="ox-st" class="ok">Normal</b></div>
+        </div>
+        <div class="controls two">
+          <label class="ctl" for="ox-spo2"><span class="row"><span>Oxygen in the blood</span><output id="ox-spo2-out">98 %</output></span>
+            <input type="range" id="ox-spo2" min="70" max="100" step="1" value="98"></label>
+          <label class="ctl" for="ox-hrr"><span class="row"><span>Heart rate</span><output id="ox-hrr-out">72 bpm</output></span>
+            <input type="range" id="ox-hrr" min="40" max="160" step="1" value="72"></label>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Watch the two LEDs take turns (slowed right down; real devices switch hundreds of times a second).</li>
+          <li>Lower <b>Oxygen in the blood</b> to 85 %. The red pulse grows bigger than the infrared one, and R goes up.</li>
+          <li>Change the heart rate. The pulses come faster or slower, but the SpO₂ reading does not change.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>Dividing by the pulsing part cancels skin, bone and veins, leaving only arterial blood. Normal SpO₂ is about 95–100 %. The simulation uses the textbook approximation SpO₂ ≈ 110 − 25R; real devices use their own calibration curve.</p></div>
+      <details><summary>Lecture detail</summary>
+        <div class="dbody">
+          <p>1. Two LEDs flash in turn: red (660 nm) and infrared (940 nm). 2. Deoxy-Hb absorbs more at 660 nm; oxy-Hb absorbs more at 940 nm. 3. A photodiode measures transmitted light; pulsing arterial blood adds a small AC signal on a large DC level. 4. Ratio of ratios R = (AC₆₆₀/DC₆₆₀) ÷ (AC₉₄₀/DC₉₄₀) → SpO₂ from a calibration curve.</p>
+          <p>One small device combines the optical window (2.2), Beer–Lambert (2.3) and spectroscopy at two wavelengths. Accuracy drops with poor circulation, movement, carbon monoxide poisoning and, for some devices, darker skin.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Pulse_oximetry" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Pulse oximeter photos ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Photoplethysmogram" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>PPG signal ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="fluorophores">
+      <div class="lesson-head"><span class="no">3.4</span><h3>Fluorophores: built-in or added</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>A <b>fluorophore</b> is a molecule that glows when light shines on it. Some are already inside our cells (NADH, collagen): this natural glow is <b>autofluorescence</b> and needs no dye. Others are <b>added as labels</b>, such as dyes or the jellyfish green fluorescent protein (GFP), to make one chosen target light up.</p>
+      </div>
+      <div class="info">
+        <div style="display:grid;gap:8px;font-size:15px">
+          <div style="display:grid;grid-template-columns:minmax(0,1.3fr) auto auto auto;gap:8px 10px;align-items:center">
+            <b style="color:#F2A65A">Built-in</b><span style="color:#9AABC2">Excite</span><span></span><span style="color:#9AABC2">Emit</span>
+            <span>Tryptophan</span><span class="chip" style="background:#3B2A6E;color:#E7EEF8;border:0">280 UV</span><span>→</span><span class="chip" style="background:#4B2C8A;color:#E7EEF8;border:0">350 UV</span>
+            <span>NADH</span><span class="chip" style="background:#4B2C8A;color:#E7EEF8;border:0">340 UV</span><span>→</span><span class="chip" style="background:#2F6FDB;color:#fff;border:0">460 blue</span>
+            <span>FAD</span><span class="chip" style="background:#2F6FDB;color:#fff;border:0">450 blue</span><span>→</span><span class="chip" style="background:#4CC24C;color:#0B1322;border:0">525 green</span>
+            <span>Collagen</span><span class="chip" style="background:#4B2C8A;color:#E7EEF8;border:0">≈ 330 UV</span><span>→</span><span class="chip" style="background:#6A5BE0;color:#fff;border:0">≈ 400 violet</span>
+            <b style="color:#F2A65A;padding-top:8px">Added labels</b><span></span><span></span><span></span>
+            <span>Fluorescein</span><span class="chip" style="background:#1FA3C9;color:#0B1322;border:0">494 cyan</span><span>→</span><span class="chip" style="background:#3CC85A;color:#0B1322;border:0">521 green</span>
+            <span>DAPI (stains DNA)</span><span class="chip" style="background:#4B2C8A;color:#E7EEF8;border:0">358 UV</span><span>→</span><span class="chip" style="background:#2F6FDB;color:#fff;border:0">461 blue</span>
+            <span>GFP (EGFP)</span><span class="chip" style="background:#1E9BD7;color:#0B1322;border:0">488 blue</span><span>→</span><span class="chip" style="background:#2BB673;color:#0B1322;border:0">507 green</span>
+          </div>
+          <p class="cap">Every arrow points to a longer wavelength: that is the Stokes shift. Values are approximate peaks (Lakowicz, 2006).</p>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="mini"><span class="tag">Clinical use</span><h4>Cancer screening</h4><p>Changes in NADH, FAD and collagen glow help spot oral and cervical pre-cancer without any dye.</p></div>
+        <div class="mini"><span class="tag">Nobel Prize 2008</span><h4>GFP</h4><p>Cells make their own glowing label when the GFP gene is joined to a target protein.</p></div>
+        <div class="mini"><span class="tag">Limitations</span><h4>Downsides</h4><p>Labels fade (photobleaching), light can harm cells, and labels may disturb the cell.</p></div>
+      </div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Green_fluorescent_protein" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>GFP images ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Autofluorescence" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Autofluorescence ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="raman">
+      <div class="lesson-head"><span class="no">3.5</span><h3>Raman: a fingerprint without a label</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Almost all scattered light keeps its colour. But about <b>one photon in a million or more</b> comes back with a slightly different colour, because it gave a little energy to a vibrating chemical bond. Each kind of bond shifts the colour by its own amount, so these rare photons form a <b>chemical fingerprint</b>. No dye is needed, so living cells can be checked as they are.</p>
+      </div>
+      <div class="key"><span class="formula">Δν̃ = 1/λ₀ − 1/λₛ</span><span class="what">Raman shift in cm⁻¹: laser wavelength λ₀, scattered wavelength λₛ.</span></div>
+      <div class="sim" id="sim-raman">
+        <p class="sim-title">Simulation · Catch the rare Raman photons</p>
+        <canvas class="cv m-sq" role="img" aria-label="Green laser photons hit a vibrating molecule; most scatter green, a few come out orange (Stokes) or blue (anti-Stokes)"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Photons scattered</span><b id="ra-n">0</b></div>
+          <div class="ro"><span>Raman (colour changed)</span><b id="ra-r">0</b></div>
+          <div class="ro"><span>In this simulation</span><b>1 in 40</b></div>
+          <div class="ro"><span>In real life</span><b>1 in 10⁶–10⁸</b></div>
+        </div>
+        <div class="btns"><button class="btn primary" id="ra-burst">Fire 1000 photons</button><button class="btn" id="ra-reset">Reset counts</button></div>
+        <p class="sim-title" style="margin-top:6px">Calculator · where does the Raman line appear?</p>
+        <div class="btns" id="ra-laser">
+          <button class="btn" data-l="532">532 nm laser</button>
+          <button class="btn on" data-l="785">785 nm laser</button>
+          <button class="btn" data-l="1064">1064 nm laser</button>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="ra-shift"><span class="row"><span>Raman shift</span><output id="ra-shift-out">1004 cm⁻¹</output></span>
+            <input type="range" id="ra-shift" min="400" max="3200" step="1" value="1004"></label>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Raman line at</span><b id="ra-ls">852 nm</b></div>
+          <div class="ro"><span>Nearest band</span><b id="ra-band">Phenylalanine (proteins)</b></div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Watch the molecule. Most photons bounce off still green. Every so often one leaves orange (Stokes) or, more rarely, blue (anti-Stokes).</li>
+          <li>Tap <b>Fire 1000 photons</b> a few times and compare the two counters.</li>
+          <li>In the calculator, keep the 785 nm laser and the 1004 cm⁻¹ shift (the phenylalanine band in proteins): the Raman line is at 852 nm, as in the lecture’s worked example.</li>
+          <li>Slide to 2850 cm⁻¹ (fats) and 1655 cm⁻¹ (protein amide I) to see where those lines appear.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>The signal is weak, so Raman needs a strong laser, a very sharp filter to block the laser colour, and a sensitive detector. CARS microscopy uses two lasers to make the signal much stronger and faster.</p></div>
+      <details><summary>Lecture detail: examples</summary>
+        <div class="dbody">
+          <p><b>Cancer cell detection:</b> normal and leukaemic T cells give different Raman spectra without any stain (Chan et al., Biophys. J. 90, 2006). Spontaneous Raman took about 2 minutes per cell.</p>
+          <p><b>One living cell:</b> a yeast cell held in an optical trap was monitored in real time as it responded to stress (Singh et al., Anal. Chem. 77, 2005).</p>
+          <p><b>Worked example:</b> 785 nm laser, 1004 cm⁻¹ band. 1/λ₀ = 10⁷/785 = 12 739 cm⁻¹; 12 739 − 1004 = 11 735 cm⁻¹; λₛ = 10⁷/11 735 = 852 nm.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Raman_spectroscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Raman spectroscopy ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Coherent_anti-Stokes_Raman_spectroscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>CARS ↗</a>
+      </div>
+    </article>
+
+    <div class="quiz" data-quiz="spectroscopy"></div>
+  </div>
+</section>
+
+<!-- ============ PART 04 ============ -->
+<section class="part wrap" id="imaging">
+  <div class="part-head">
+    <span class="part-num">04</span>
+    <h2>Optical bioimaging</h2>
+    <p>From single molecules to the human retina: seeing biology with light.</p>
+  </div>
+  <div class="lessons">
+
+    <article class="lesson" id="why">
+      <div class="lesson-head"><span class="no">4.1</span><h3>Why image with light?</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>X-ray, CT, MRI and ultrasound each have limits: radiation dose, little chemical information, or not enough detail. Light is <b>safe</b>, can see details down to single molecules and can report <b>chemistry</b>. Its weakness: it cannot go deep, only millimetres to a few centimetres. So light is used where it can reach: skin, eyes, inside endoscopes, during surgery, and in cell samples.</p>
+      </div>
+      <div class="tbl"><table>
+        <tr><th>Modality</th><th>Its limitation</th><th>What optical imaging offers</th></tr>
+        <tr><td>X-ray, CT</td><td>Ionising radiation; poor for young patients and dense breasts; cannot separate benign from malignant tumours</td><td>Non-ionising light: safe to repeat</td></tr>
+        <tr><td>Radioisotope imaging</td><td>Radioactive tracers</td><td>Molecular contrast from fluorescence and Raman, no radioactivity</td></tr>
+        <tr><td>MRI</td><td>Little specific chemical or real-time information</td><td>Spectra, lifetime, polarisation, in real time</td></tr>
+        <tr><td>Ultrasound</td><td>Detail no better than about a millimetre</td><td>From ≈ 100 nm to whole organs; can be combined with ultrasound</td></tr>
+        <tr><td><b>Optical</b></td><td><b>Its own limit:</b> only mm to a few cm deep, because of scattering</td><td>Best where light can reach</td></tr>
+      </table></div>
+    </article>
+
+    <article class="lesson" id="resolution">
+      <div class="lesson-head"><span class="no">4.2</span><h3>How small can a light microscope see?</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Because light is a wave, even a perfect microscope blurs each tiny point into a small fuzzy spot, about <b>200 nm</b> wide. If two points are closer than that, they merge into one blob. You can sharpen the image with a <b>shorter wavelength</b> or a <b>better lens</b> (higher numerical aperture, NA), or by using a super-resolution trick such as STED.</p>
+      </div>
+      <div class="key"><span class="formula">d = λ / (2 NA)</span><span class="what">Abbe limit (1873). Green light, oil lens NA 1.4: d ≈ 180 nm.</span></div>
+      <div class="sim" id="sim-res">
+        <p class="sim-title">Simulation · Can you see two dots?</p>
+        <canvas class="cv m-43" role="img" aria-label="Two glowing dots seen through a microscope, with a brightness profile below showing whether they are separate"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Blur limit d</span><b id="rs-d">179 nm</b></div>
+          <div class="ro"><span>Dot spacing</span><b id="rs-s">300 nm</b></div>
+          <div class="ro"><span>Result</span><b id="rs-res" class="ok">Two dots seen</b></div>
+        </div>
+        <div class="controls two">
+          <label class="ctl" for="rs-sep"><span class="row"><span>Distance between dots</span><output id="rs-sep-out">300 nm</output></span>
+            <input type="range" id="rs-sep" min="20" max="800" step="5" value="300"></label>
+          <label class="ctl" for="rs-lam"><span class="row"><span>Wavelength</span><output id="rs-lam-out">500 nm</output></span>
+            <input type="range" class="spec" id="rs-lam" min="400" max="700" step="5" value="500"></label>
+          <label class="ctl" for="rs-na"><span class="row"><span>Lens quality (NA)</span><output id="rs-na-out">1.40</output></span>
+            <input type="range" id="rs-na" min="0.25" max="1.4" step="0.05" value="1.4"></label>
+          <label class="chk" for="rs-sted"><input type="checkbox" id="rs-sted"> Switch on STED super-resolution (≈ 30 nm)</label>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Slide the dots closer together until the dip between the two peaks disappears. That is the blur limit.</li>
+          <li>Set the distance to 150 nm. Try blue light (400 nm): can you separate them again?</li>
+          <li>Lower the lens quality to 0.25. Even 600 nm dots blur together.</li>
+          <li>Set the distance to 60 nm and tick <b>STED</b>. The dots become sharp again: super-resolution (Nobel Prize 2014).</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>A cell (10 µm) and a bacterium (1 µm) are easy to see. A virus (100 nm) or a protein (5 nm) is below the limit, so you need electron microscopy or super-resolution.</p></div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Diffraction-limited_system" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Diffraction limit ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Numerical_aperture" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Numerical aperture ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="contrast">
+      <div class="lesson-head"><span class="no">4.3</span><h3>Seeing transparent cells without stain</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Most cells are almost transparent, like a glass bead in water. A normal (bright-field) microscope barely sees them unless they are <b>stained</b>, which kills them. <b>Phase contrast</b> and <b>DIC</b> turn the tiny delay light picks up inside a cell into brightness, so living, unstained cells become visible. <b>Polarised light</b> makes ordered structures such as collagen, or gout crystals, glow.</p>
+      </div>
+      <div class="sim" id="sim-cont">
+        <p class="sim-title">Simulation · Switch the microscope mode</p>
+        <canvas class="cv ar21 m-43" role="img" aria-label="Microscope field of view with living cells, shown in the selected contrast mode"></canvas>
+        <div class="btns" id="ct-modes">
+          <button class="btn on" data-m="bf">Bright-field</button>
+          <button class="btn" data-m="pc">Phase contrast</button>
+          <button class="btn" data-m="dic">DIC</button>
+          <button class="btn" data-m="stain">Stained</button>
+          <button class="btn" data-m="pol">Polarised light</button>
+        </div>
+        <p class="simnote" id="ct-note">Bright-field: the living cells are almost invisible.</p>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Start in <b>Bright-field</b>: can you even find the cells?</li>
+          <li>Tap <b>Phase contrast</b>, then <b>DIC</b>. The same living cells now show edges and nuclei.</li>
+          <li>Tap <b>Stained</b>: very clear, but the cells had to be killed and fixed first.</li>
+          <li>Tap <b>Polarised light</b>: only the needle-shaped crystals glow, which is how gout is diagnosed from joint fluid.</li>
+        </ol>
+      </div>
+      <details><summary>Lecture detail</summary>
+        <div class="dbody">
+          <p><b>Phase contrast</b> (Zernike, 1932; Nobel Prize 1953) converts phase delays from refractive-index differences into brightness. <b>DIC</b> (Nomarski) interferes two slightly shifted, polarised beams and shows phase gradients as a pseudo-3D relief. <b>Polarisation</b> microscopy with crossed polarisers reveals birefringent structures: collagen, muscle fibres, amyloid, urate crystals, asbestos fibres. Example from the lecture: live HeLa cells, invisible in bright-field, show nuclei and edges clearly under phase contrast and DIC.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Phase-contrast_microscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Phase-contrast images ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Differential_interference_contrast_microscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>DIC images ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="epi">
+      <div class="lesson-head"><span class="no">4.4</span><h3>The fluorescence microscope</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Blue light is shone onto a sample that has green-glowing labels. A special mirror called a <b>dichroic</b> reflects the blue light down onto the sample but lets the <b>green glow</b> pass up to the camera. Filters remove any leftover blue, so only the labelled parts shine against a black background.</p>
+      </div>
+      <div class="info">
+        <svg viewBox="0 0 800 450" role="img" aria-label="Animated light path: blue light from the source passes an excitation filter, reflects off the dichroic mirror down through the objective to the sample; green emission travels back up through the dichroic and emission filter to the camera">
+          <g font-family="IBM Plex Sans, sans-serif" font-size="17" fill="#E7EEF8">
+            <rect x="40" y="185" width="90" height="50" rx="10" fill="#2F6FDB" class="glow"/>
+            <text x="85" y="265" text-anchor="middle">Light source</text>
+            <line x1="130" y1="210" x2="388" y2="210" stroke="#4F8CFF" stroke-width="6" class="flow"/>
+            <rect x="215" y="178" width="14" height="64" rx="3" fill="#4F8CFF" opacity=".7"/>
+            <text x="222" y="275" text-anchor="middle">Excitation filter</text>
+            <line x1="390" y1="210" x2="390" y2="385" stroke="#4F8CFF" stroke-width="6" class="flow"/>
+            <line x1="410" y1="385" x2="410" y2="90" stroke="#3CC85A" stroke-width="6" class="flow slow"/>
+            <line x1="345" y1="255" x2="455" y2="165" stroke="#C9D5E6" stroke-width="6"/>
+            <text x="470" y="200">Dichroic mirror</text>
+            <text x="470" y="222" fill="#9AABC2" font-size="15">reflects blue, passes green</text>
+            <polygon points="360,300 440,300 426,345 374,345" fill="#5A6B85"/>
+            <text x="455" y="330">Objective</text>
+            <rect x="290" y="390" width="220" height="26" rx="6" fill="#2BB673" opacity=".25"/>
+            <circle cx="330" cy="403" r="6" fill="#3CC85A" class="glow"/><circle cx="400" cy="403" r="7" fill="#3CC85A" class="glow"/><circle cx="470" cy="403" r="6" fill="#3CC85A" class="glow"/>
+            <text x="525" y="410">Sample with labels</text>
+            <rect x="370" y="112" width="80" height="12" rx="3" fill="#3CC85A" opacity=".7"/>
+            <text x="470" y="123">Emission filter</text>
+            <rect x="350" y="28" width="120" height="50" rx="8" fill="#121D31" stroke="#9AABC2"/>
+            <text x="410" y="59" text-anchor="middle">Camera</text>
+          </g>
+        </svg>
+        <p class="cap">Blue goes down, green comes up. This only works because of the Stokes shift (3.1).</p>
+      </div>
+      <div class="grid2">
+        <div class="mini"><span class="tag">Variant</span><h4>TIRF</h4><p>Lights up only about 100 nm above the glass, ideal for watching events at the cell membrane.</p></div>
+        <div class="mini"><span class="tag">Variant</span><h4>FRET</h4><p>Two dyes swap energy only when 1–10 nm apart: a “molecular ruler” to see if two proteins touch.</p></div>
+      </div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Fluorescence_microscope" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Fluorescence microscope images ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="sectioning">
+      <div class="lesson-head"><span class="no">4.5</span><h3>Sharp slices: confocal and two-photon</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>In a thick sample, glow from above and below the focus makes the picture hazy. A <b>confocal</b> microscope puts a <b>pinhole</b> in front of the detector to block that out-of-focus glow. A <b>two-photon</b> microscope makes only the focus glow in the first place, using near-infrared light that also reaches deeper into tissue.</p>
+      </div>
+      <div class="sim" id="sim-sect">
+        <p class="sim-title">Simulation · Widefield vs confocal vs two-photon</p>
+        <canvas class="cv m-tall" role="img" aria-label="Left: side view of a light beam focused into a thick sample with glowing beads. Right: the image the detector records."></canvas>
+        <div class="btns" id="se-modes">
+          <button class="btn on" data-m="wf">Widefield</button>
+          <button class="btn" data-m="cf">Confocal</button>
+          <button class="btn" data-m="tp">Two-photon</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Out-of-focus haze</span><b id="se-haze" class="bad">High</b></div>
+          <div class="ro"><span>Signal at this depth</span><b id="se-sig">–</b></div>
+          <div class="ro"><span>Light used</span><b id="se-light">Blue, 488 nm</b></div>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="se-depth"><span class="row"><span>Focus depth in the sample</span><output id="se-depth-out">200 µm</output></span>
+            <input type="range" id="se-depth" min="0.1" max="0.9" step="0.01" value="0.4"></label>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>In <b>Widefield</b>, the whole sample glows and the image on the right is hazy.</li>
+          <li>Tap <b>Confocal</b>. The beam scans point by point and the pinhole blocks out-of-focus light: the image is sharp.</li>
+          <li>Tap <b>Two-photon</b>. Only the focal spot glows, so no pinhole is needed.</li>
+          <li>Move the focus deeper in each mode and compare “Signal at this depth”. Two-photon keeps more signal deep down.</li>
+        </ol>
+      </div>
+      <details><summary>Lecture detail</summary>
+        <div class="dbody">
+          <p><b>Confocal</b> (Marvin Minsky, patent 1957): a laser lights one point; a pinhole at the matching (confocal) image plane passes only light from the focal plane. Scanning mirrors build the image point by point; stacking slices gives 3D. Trade-offs: slower, more photobleaching, the pinhole throws signal away.</p>
+          <p><b>Two-photon</b> (Denk, Strickler and Webb, 1990): two near-IR photons absorbed together supply the energy of one visible photon (2 × 800 nm ≈ one 400 nm photon). Probability ∝ I², so only the focal volume fluoresces. Near-IR scatters less, imaging ≈ 0.5–1 mm deep. Needs a femtosecond pulsed laser (e.g. Ti:sapphire, ≈ 100 fs, 80 MHz).</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Confocal_microscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Confocal images ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Two-photon_excitation_microscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Two-photon images ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="superres">
+      <div class="lesson-head"><span class="no">4.6</span><h3>Super-resolution: beating the blur limit</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>The 200 nm limit assumes every molecule in the spot glows at the same time. Super-resolution microscopes <b>control which molecules glow</b>, a few at a time or only in a tiny centre, and reach about <b>20 nm</b>. Eric Betzig, Stefan Hell and William Moerner won the <b>2014 Nobel Prize in Chemistry</b> for this. Try the STED switch in the 4.2 simulation.</p>
+      </div>
+      <div class="tbl"><table>
+        <tr><th>Technique</th><th>How it beats the limit</th><th>Resolution</th></tr>
+        <tr><td>STED</td><td>A doughnut-shaped beam switches off the glow around the focus, leaving a tiny bright centre</td><td>≈ 20–50 nm</td></tr>
+        <tr><td>SIM</td><td>Striped light makes moiré patterns that reveal finer detail</td><td>≈ 100 nm</td></tr>
+        <tr><td>PALM / STORM</td><td>Switch on a few molecules at a time and pinpoint each centre</td><td>≈ 20 nm</td></tr>
+        <tr><td>NSOM</td><td>A tiny-aperture tip scans nanometres above the surface</td><td>&lt; 100 nm</td></tr>
+      </table></div>
+      <div class="photo">
+        <a href="https://www.nobelprize.org/prizes/chemistry/2014/summary/" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Nobel Prize 2014 ↗</a>
+        <a href="https://en.wikipedia.org/wiki/STED_microscopy" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>STED images ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="oct">
+      <div class="lesson-head"><span class="no">4.7</span><h3>Clinical example: OCT eye scan</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>OCT is like <b>ultrasound, but with light</b>. Light is split into two paths: one goes to a moving mirror, the other into the eye. The two beams only <b>add up (interfere)</b> when both paths are the same length, to within the short coherence length (1.3). By moving the mirror, the machine reads the echo from each depth and builds a picture of the retina’s layers, with micrometre detail.</p>
+      </div>
+      <div class="sim" id="sim-oct">
+        <p class="sim-title">Simulation · Build an OCT depth scan</p>
+        <canvas class="cv m-tall" role="img" aria-label="Interferometer with a movable reference mirror and an eye sample with three layers; a graph of detector signal against mirror position"></canvas>
+        <div class="btns" id="oc-src">
+          <button class="btn on" data-s="sld">Broadband source (OCT)</button>
+          <button class="btn" data-s="laser">Laser (coherent)</button>
+        </div>
+        <div class="readouts">
+          <div class="ro"><span>Mirror position</span><b id="oc-z">100 µm</b></div>
+          <div class="ro"><span>Detector</span><b id="oc-sig">Quiet</b></div>
+          <div class="ro"><span>Layer found</span><b id="oc-layer">–</b></div>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="oc-range"><span class="row"><span>Move the reference mirror</span><output id="oc-range-out">100 µm</output></span>
+            <input type="range" id="oc-range" min="0" max="1000" step="1" value="100"></label>
+          <div class="btns"><button class="btn primary" id="oc-auto">Auto-scan</button><button class="btn" id="oc-clear">Clear graph</button></div>
+        </div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Slowly drag the mirror slider from left to right. A burst of signal appears each time the mirror distance matches a layer in the eye.</li>
+          <li>Tap <b>Auto-scan</b> to sweep the whole depth. The graph now shows three peaks: three layers.</li>
+          <li>Switch to <b>Laser (coherent)</b>, clear the graph and scan again. The signal is everywhere, so the depth of each layer can no longer be found.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>OCT needs light that stays in step only briefly. Typical numbers: depth detail 1–15 µm, imaging depth 1–2 mm. Used for macular degeneration, diabetic eye disease, glaucoma, and inside coronary arteries.</p></div>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Optical_coherence_tomography" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>OCT retina scans ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Michelson_interferometer" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Michelson interferometer ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="compare">
+      <div class="lesson-head"><span class="no">4.8</span><h3>Choosing an imaging technique</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>There is always a trade-off: <b>the deeper a technique sees, the less fine detail it shows</b>. Pick the tool for the question.</p>
+      </div>
+      <div class="tbl"><table>
+        <tr><th>Technique</th><th>Detail</th><th>Depth</th><th>Label?</th><th>Typical use</th></tr>
+        <tr><td>Wide-field fluorescence</td><td>≈ 250 nm</td><td>Thin samples</td><td>Yes</td><td>Live-cell imaging</td></tr>
+        <tr><td>Confocal</td><td>≈ 200 nm</td><td>≈ 100 µm</td><td>Yes</td><td>3D cells and tissue slices</td></tr>
+        <tr><td>Two-photon</td><td>≈ 300–500 nm</td><td>≈ 0.5–1 mm</td><td>Yes, or natural glow</td><td>Deep brain imaging</td></tr>
+        <tr><td>STED, PALM</td><td>≈ 20–50 nm</td><td>A few µm</td><td>Special dyes</td><td>Molecular structure</td></tr>
+        <tr><td>Raman, CARS</td><td>≈ 0.3–1 µm</td><td>≈ 100 µm</td><td>No</td><td>Label-free chemical maps</td></tr>
+        <tr><td>OCT</td><td>≈ 1–15 µm</td><td>≈ 1–2 mm</td><td>No</td><td>Retina, coronary arteries</td></tr>
+      </table></div>
+    </article>
+
+    <div class="quiz" data-quiz="imaging"></div>
+  </div>
+</section>
+
+<!-- ============ PART 05 ============ -->
+<section class="part wrap" id="manipulation">
+  <div class="part-head">
+    <span class="part-num">05</span>
+    <h2>Optical manipulation</h2>
+    <p>Light carries momentum: it can hold, measure and cut single cells.</p>
+  </div>
+  <div class="lessons">
+
+    <article class="lesson" id="tweezers">
+      <div class="lesson-head"><span class="no">5.1</span><h3>Optical tweezers: holding cells with light</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Light gives a tiny push. When a laser is focused very tightly, a small bead or cell is <b>pulled towards the brightest spot</b>, the focus, and held there like a marble in a bowl. The force is tiny, a few <b>piconewtons</b> (pN), but just right to hold a cell or to measure the pull of a single protein motor. Arthur Ashkin invented it in 1986 (Nobel Prize in Physics, 2018).</p>
+      </div>
+      <div class="key"><span class="formula">F = Q nₘ W / c</span><span class="what">Q = trapping efficiency, nₘ = refractive index of water (1.33), W = laser power, c = speed of light.</span></div>
+      <div class="sim" id="sim-tw">
+        <p class="sim-title">Simulation · Trap a bead (drag it with your finger)</p>
+        <canvas class="cv grab m-sq" role="img" aria-label="Microscope view: a bead held at a laser focus; drag the bead and it springs back; a water flow can push it out"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Maximum trap force</span><b id="tw-f">4.4 pN</b></div>
+          <div class="ro"><span>Water flow force</span><b id="tw-flow">0 pN</b></div>
+          <div class="ro"><span>Bead</span><b id="tw-st" class="ok">Trapped</b></div>
+          <div class="ro"><span>Strong enough for</span><b id="tw-cmp">Kinesin step</b></div>
+        </div>
+        <div class="controls two">
+          <label class="ctl" for="tw-w"><span class="row"><span>Laser power at the sample</span><output id="tw-w-out">10 mW</output></span>
+            <input type="range" id="tw-w" min="0" max="100" step="1" value="10"></label>
+          <label class="ctl" for="tw-fl"><span class="row"><span>Water flow pushing the bead</span><output id="tw-fl-out">0 pN</output></span>
+            <input type="range" id="tw-fl" min="0" max="40" step="0.5" value="0"></label>
+        </div>
+        <div class="btns"><button class="btn" id="tw-reset">Put a new bead in the trap</button></div>
+      </div>
+      <div class="try"><h4>Try it</h4>
+        <ol class="steps">
+          <li>Drag the bead away from the red cross and let go. It springs back to the focus.</li>
+          <li>Slowly increase the <b>water flow</b>. The bead is pushed sideways but stays trapped until the flow is stronger than the trap (about 4.4 pN at 10 mW).</li>
+          <li>Tap <b>Put a new bead in the trap</b>, then raise the laser power. More power gives a stronger trap.</li>
+          <li>Set the power to 0 mW: with no light, there is no trap.</li>
+        </ol>
+      </div>
+      <div class="notice"><h4>What to notice</h4><p>A 10 mW trap (4.4 pN) matches the force of one kinesin motor step (3–5 pN), so it can hold the motor and measure it. Near-infrared lasers (1064 nm) are used to avoid heating the cell.</p></div>
+      <details><summary>Lecture detail: physics and the worked example</summary>
+        <div class="dbody">
+          <p>Photons carry momentum. When a bead bends (refracts) the light, the light’s momentum changes, so the bead feels an equal and opposite force. The <b>gradient force</b> pulls a particle with higher refractive index than water towards the brightest point; the <b>scattering force</b> pushes it along the beam. A stable 3D trap needs a high-NA objective (NA &gt; 1).</p>
+          <p><b>Worked example.</b> Polystyrene bead in water, nₘ = 1.33, W = 10 mW, Q = 0.1: F = (0.1 × 1.33 × 0.010)/(3.00 × 10⁸) = 4.4 × 10⁻¹² N = 4.4 pN.</p>
+          <div class="tbl"><table>
+            <tr><th>Biological force</th><th>pN</th></tr>
+            <tr><td>Kinesin step</td><td>3–5</td></tr>
+            <tr><td>RNA polymerase stall</td><td>15–30</td></tr>
+            <tr><td>Viral DNA-packaging motor</td><td>≈ 50</td></tr>
+            <tr><td>DNA overstretching</td><td>≈ 65</td></tr>
+            <tr><td>Biotin–streptavidin bond</td><td>300–400</td></tr>
+          </table></div>
+          <p>Tool ranges: optical traps 0.1–100 pN; AFM 10–10 000 pN.</p>
+        </div>
+      </details>
+      <div class="photo">
+        <a href="https://en.wikipedia.org/wiki/Optical_tweezers" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Optical tweezers ↗</a>
+        <a href="https://www.nobelprize.org/prizes/physics/2018/summary/" target="_blank" rel="noopener"><svg><use href="#i-photo"/></svg>Nobel Prize 2018 ↗</a>
+      </div>
+    </article>
+
+    <article class="lesson" id="uses">
+      <div class="lesson-head"><span class="no">5.2</span><h3>What optical tweezers are used for</h3></div>
+      <div class="grid2">
+        <div class="mini"><h4>Move cells without touching</h4><p>Pick up, position and sort single cells inside a sealed, sterile chamber.</p></div>
+        <div class="mini"><h4>Measure molecular motors</h4><p>Forces (pN) and steps (nm) of kinesin, myosin and RNA polymerase.</p></div>
+        <div class="mini"><h4>Measure mechanics</h4><p>Stretch DNA; test how stretchy red blood cells are.</p></div>
+        <div class="mini"><h4>Raman tweezers</h4><p>Hold one cell in the beam and read its Raman fingerprint (3.5).</p></div>
+      </div>
+      <p class="body" style="font-size:16px;color:var(--muted)">Strengths: no contact, works in normal buffer, forces of 0.1–100 pN and movements of 1–500 nm match molecular motors. Limitations: light can damage or heat the sample (reduced with 1064 nm); only small forces.</p>
+    </article>
+
+    <article class="lesson" id="nanosurgery">
+      <div class="lesson-head"><span class="no">5.3</span><h3>Laser nanosurgery inside living cells</h3></div>
+      <div class="plain"><p class="lbl">In plain words</p>
+        <p>Very short, very intense laser pulses (femtoseconds) are focused inside a cell. Only at the focus is the light strong enough to vaporise material, so scientists can <b>cut a single fibre inside a living cell</b> without breaking the cell open. It is the same physics as two-photon microscopy, with more energy.</p>
+      </div>
+      <div class="info">
+        <svg viewBox="0 0 800 300" role="img" aria-label="Animation: a laser cone focuses inside a cell onto one fibre; a flash at the focus cuts it while the rest of the cell is untouched">
+          <ellipse cx="400" cy="185" rx="330" ry="100" fill="#1F3A2E" stroke="#5FD38D" stroke-width="2"/>
+          <ellipse cx="560" cy="190" rx="70" ry="45" fill="#2C5240" stroke="#5FD38D" stroke-width="1.5"/>
+          <g stroke="#9FE3BC" stroke-width="3" fill="none" opacity=".8">
+            <path d="M120 170 C 220 140 300 210 390 175"/><path d="M410 172 C 450 160 480 150 500 160"/>
+            <path d="M140 220 C 260 230 330 180 470 230"/><path d="M200 130 C 270 120 330 150 380 130"/>
+          </g>
+          <polygon points="330,0 470,0 400,172" fill="#C9302C" opacity=".25"/>
+          <circle cx="400" cy="173" r="16" fill="#FFE08A" class="flashy"/>
+          <circle cx="400" cy="173" r="5" fill="#FFF4CC"/>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="17" fill="#E7EEF8">
+            <text x="490" y="40">femtosecond near-IR laser</text>
+            <text x="560" y="196" text-anchor="middle" fill="#C9F0D8">nucleus</text>
+            <text x="130" y="285" fill="#9AABC2">Only the focus is affected; the membrane stays intact</text>
+          </g>
+        </svg>
+      </div>
+      <div class="grid3">
+        <div class="mini"><h4>Ablation</h4><p>Destroy one organelle (a mitochondrion, centrosome or nerve branch) and watch the cell respond.</p></div>
+        <div class="mini"><h4>Dissection</h4><p>Cut single microtubules or parts of chromosomes to study forces and repair.</p></div>
+        <div class="mini"><h4>Induction</h4><p>Disturb the cell’s skeleton or flow on purpose, then watch it recover.</p></div>
+      </div>
+      <p class="body" style="font-size:16px;color:var(--muted)">Femtosecond pulses need about 100× less energy than nanosecond pulses to make a plasma, so there is less heat and shock damage (Vogel et al., 2005).</p>
+    </article>
+
+    <div class="quiz" data-quiz="manipulation"></div>
+  </div>
+</section>
+
+<!-- ============ REVIEW ============ -->
+<section class="part wrap" id="review">
+  <div class="part-head">
+    <span class="part-num">✓</span>
+    <h2>Review</h2>
+    <p>Key takeaways and the words to know.</p>
+  </div>
+  <div class="lessons">
+    <ul class="takeaways">
+      <li><span class="n">01</span><span>Light is a wave (λ, coherence) and a stream of photons (E = hc/λ). The energy of each photon decides what light can do.</span></li>
+      <li><span class="n">02</span><span>Absorption (Beer–Lambert) and scattering limit how deep light goes; 650–1350 nm is the optical window.</span></li>
+      <li><span class="n">03</span><span>Spectroscopy reads chemistry: absorption for amount, fluorescence for labelled targets, Raman for label-free fingerprints.</span></li>
+      <li><span class="n">04</span><span>Optical imaging trades depth for detail: 20 nm super-resolution to millimetre-deep OCT.</span></li>
+      <li><span class="n">05</span><span>Light carries momentum: focused lasers can hold, measure and cut single cells.</span></li>
+    </ul>
+    <article class="lesson">
+      <div class="lesson-head"><h3>Glossary</h3></div>
+      <dl class="gloss">
+        <div><dt>Wavelength (λ)</dt><dd>Distance between two wave crests; sets the colour of light.</dd></div>
+        <div><dt>Photon</dt><dd>One packet of light energy, E = hc/λ.</dd></div>
+        <div><dt>Coherence</dt><dd>How well light waves stay in step with each other.</dd></div>
+        <div><dt>Chromophore</dt><dd>A molecule that absorbs light, e.g. haemoglobin, melanin, water.</dd></div>
+        <div><dt>Optical window</dt><dd>650–1350 nm, where tissue absorbs least and light goes deepest.</dd></div>
+        <div><dt>Absorbance (A)</dt><dd>log₁₀(I₀/I); grows with concentration and path length.</dd></div>
+        <div><dt>Scattering</dt><dd>Light changing direction after hitting small structures.</dd></div>
+        <div><dt>Fluorescence</dt><dd>Light given out after absorbing light, at a longer wavelength.</dd></div>
+        <div><dt>Stokes shift</dt><dd>The colour difference between absorbed and emitted light.</dd></div>
+        <div><dt>Raman scattering</dt><dd>Rare scattering that changes colour by a bond’s vibration energy.</dd></div>
+        <div><dt>Numerical aperture (NA)</dt><dd>How much light a lens collects; higher NA = finer detail.</dd></div>
+        <div><dt>Confocal pinhole</dt><dd>A tiny hole that blocks out-of-focus light.</dd></div>
+        <div><dt>OCT</dt><dd>Optical coherence tomography: depth imaging by interference, “ultrasound with light”.</dd></div>
+        <div><dt>Piconewton (pN)</dt><dd>10⁻¹² N, the force scale of molecular motors and optical traps.</dd></div>
+      </dl>
+    </article>
+    <article class="lesson">
+      <div class="lesson-head"><h3>Further reading</h3></div>
+      <ul class="refs">
+        <li>Prasad, P. N. (2003). Introduction to Biophotonics. Wiley-Interscience.</li>
+        <li>Cojoc, D. (2008). Introduction to Biophotonics. ICTP Winter College lecture notes, Trieste.</li>
+        <li>Harvey, D. Analytical Chemistry 2.1, Ch. 10 Spectroscopic Methods. LibreTexts.</li>
+        <li>Lakowicz, J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed. Springer.</li>
+        <li>Jacques, S. L. (2013). Optical properties of biological tissues: a review. Phys. Med. Biol. 58, R37.</li>
+        <li>Huang, D. et al. (1991). Optical coherence tomography. Science 254, 1178.</li>
+        <li>Ashkin, A. et al. (1986). Single-beam gradient force optical trap. Opt. Lett. 11, 288.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Biophotonics · NMJ40003 Bioinstrumentation II · Mr. Asyraf Hakimi, UniMAP. Simulations are simplified teaching models; numbers are illustrative unless taken from the lecture.</p>
+</footer>
+<script>
+(function(){
+'use strict';
+var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function $(s, el){ return (el || document).querySelector(s); }
+function $$(s, el){ return Array.prototype.slice.call((el || document).querySelectorAll(s)); }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function lerp(a, b, t){ return a + (b - a) * t; }
+function rand(a, b){ return a + Math.random() * (b - a); }
+var MONO = '"IBM Plex Mono", ui-monospace, monospace';
+var SANS = '"IBM Plex Sans", system-ui, sans-serif';
+var C = { bg:'#121D31', bg0:'#0B1322', grid:'rgba(150,175,210,0.14)', text:'#E7EEF8', muted:'#9AABC2', acc:'#F2A65A', blue:'#7FB8E6', green:'#5FD38D', red:'#FF6B5B', line:'#24324B' };
+
+function wlRGBarr(l){
+  var r = 0, g = 0, b = 0;
+  if (l < 380) return [150, 110, 255];
+  if (l > 780) return [190, 60, 80];
+  if (l < 440){ r = -(l - 440) / 60; b = 1; }
+  else if (l < 490){ g = (l - 440) / 50; b = 1; }
+  else if (l < 510){ g = 1; b = -(l - 510) / 20; }
+  else if (l < 580){ r = (l - 510) / 70; g = 1; }
+  else if (l < 645){ r = 1; g = -(l - 645) / 65; }
+  else { r = 1; }
+  var f = 1;
+  if (l < 420) f = 0.35 + 0.65 * (l - 380) / 40; else if (l > 700) f = 0.35 + 0.65 * (780 - l) / 80;
+  function gm(v){ return Math.round(255 * Math.pow(v * f, 0.8)); }
+  return [gm(r), gm(g), gm(b)];
+}
+function wl(l, a){ var c = wlRGBarr(l); return a == null ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + a + ')'; }
+function isInvisible(l){ return l < 380 || l > 750; }
+
+function fit(cv){
+  var r = cv.getBoundingClientRect();
+  var d = Math.min(window.devicePixelRatio || 1, 2);
+  var W = Math.max(1, Math.round(r.width * d)), H = Math.max(1, Math.round(r.height * d));
+  if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(d, 0, 0, d, 0, 0);
+  return { ctx: ctx, w: r.width, h: r.height };
+}
+function clear(ctx, w, h, col){ ctx.fillStyle = col || C.bg; ctx.fillRect(0, 0, w, h); }
+function text(ctx, s, x, y, o){
+  o = o || {};
+  ctx.font = (o.weight || '400') + ' ' + (o.size || 12) + 'px ' + (o.font || SANS);
+  ctx.fillStyle = o.color || C.text;
+  ctx.textAlign = o.align || 'left';
+  ctx.textBaseline = o.base || 'alphabetic';
+  ctx.fillText(s, x, y);
+}
+function dot(ctx, x, y, r, col, glow){
+  ctx.save();
+  if (glow){ ctx.shadowColor = col; ctx.shadowBlur = glow; }
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+  ctx.restore();
+}
+function arrow(ctx, x0, y0, x1, y1, col, lw){
+  var a = Math.atan2(y1 - y0, x1 - x0), hl = 8 + (lw || 2) * 1.5;
+  ctx.save(); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw || 2;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - Math.cos(a) * hl * 0.6, y1 - Math.sin(a) * hl * 0.6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, y1);
+  ctx.lineTo(x1 - hl * Math.cos(a - 0.45), y1 - hl * Math.sin(a - 0.45));
+  ctx.lineTo(x1 - hl * Math.cos(a + 0.45), y1 - hl * Math.sin(a + 0.45));
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function wavy(ctx, x0, y0, x1, y1, col, amp, per, lw){
+  var dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 1) return;
+  var ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+  ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = lw || 2.5; ctx.shadowColor = col; ctx.shadowBlur = 8;
+  ctx.beginPath();
+  for (var s = 0; s <= L; s += 2){
+    var o = Math.sin(s / per * Math.PI * 2) * amp;
+    var px = x0 + ux * s + nx * o, py = y0 + uy * s + ny * o;
+    if (s === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function interp(nodes, x){
+  if (x <= nodes[0][0]) return nodes[0][1];
+  for (var i = 1; i < nodes.length; i++){
+    if (x <= nodes[i][0]){ var a = nodes[i - 1], b = nodes[i]; return lerp(a[1], b[1], (x - a[0]) / (b[0] - a[0])); }
+  }
+  return nodes[nodes.length - 1][1];
+}
+var SUP = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻' };
+function sci(x, d){
+  if (x === 0) return '0';
+  var e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e);
+  return m.toFixed(d == null ? 2 : d) + ' × 10' + String(e).split('').map(function(ch){ return SUP[ch]; }).join('');
+}
+function setText(id, s, cls){ var el = document.getElementById(id); if (!el) return; el.textContent = s; if (cls !== undefined){ el.classList.remove('ok','bad','mid'); if (cls) el.classList.add(cls); } }
+function seg(container, key, cb){
+  if (!container) return;
+  container.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b || !container.contains(b)) return;
+    $$('button', container).forEach(function(x){ x.classList.toggle('on', x === b); });
+    cb(b.dataset[key], b);
+  });
+}
+function range(id, fmt, cb){
+  var el = document.getElementById(id), out = document.getElementById(id + '-out');
+  function u(){ var v = parseFloat(el.value); if (out) out.textContent = fmt(v); if (cb) cb(v); }
+  el.addEventListener('input', u); u();
+  return { el: el, set: function(v){ el.value = v; u(); } };
+}
+
+/* Animation loop: only draws simulations that are on screen */
+var sims = [];
+var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){
+  es.forEach(function(e){ sims.forEach(function(s){ if (s.el === e.target) s.vis = e.isIntersecting; }); });
+}, { rootMargin: '150px' }) : null;
+function addSim(el, draw){ var s = { el: el, draw: draw, vis: !io }; sims.push(s); if (io) io.observe(el); return s; }
+var last = performance.now(), T = 0;
+function frame(now){
+  var dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; T += dt;
+  for (var i = 0; i < sims.length; i++){
+    var s = sims[i];
+    if (s.vis){ try { s.draw(T, dt); } catch (err){ if (!s.err){ s.err = 1; console.error(err); } } }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- Hero animation ---------- */
+(function(){
+  var cv = document.getElementById('hero-cv'); if (!cv) return;
+  var P = [], F = [], acc = 0;
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h;
+    clear(ctx, w, h, C.bg);
+    var cx = w * 0.72, cy = h * 0.52, rx = Math.min(w * 0.2, h * 0.75), ry = h * 0.38;
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(95,211,141,0.07)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(95,211,141,0.55)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx + rx * 0.15, cy - ry * 0.05, rx * 0.3, ry * 0.38, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(95,211,141,0.14)'; ctx.fill();
+    ctx.restore();
+    text(ctx, 'cell', cx, cy + ry + 16 > h - 4 ? h - 6 : cy + ry + 16, { size: 12, color: C.muted, align: 'center' });
+    if (RM){
+      for (var k = 0; k < 7; k++){ var l = 420 + k * 50; dot(ctx, w * 0.08 + k * w * 0.06, cy + Math.sin(k * 1.7) * ry * 0.5, 4, wl(l), 10); }
+      return;
+    }
+    acc += dt * 26;
+    while (acc > 1){ acc--; P.push({ x: -5, y: cy + rand(-0.55, 0.55) * ry, vx: w * 0.32, vy: 0, l: rand(420, 700), s: 0 }); }
+    for (var i = P.length - 1; i >= 0; i--){
+      var p = P[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      var inside = Math.pow((p.x - cx) / rx, 2) + Math.pow((p.y - cy) / ry, 2) < 1;
+      if (inside && p.s === 0){
+        p.s = 1;
+        var r = Math.random(), sp = Math.hypot(p.vx, p.vy), a;
+        if (r < 0.32){ a = rand(0, Math.PI * 2); p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp; }
+        else if (r < 0.58){ F.push({ x: p.x, y: p.y, a: 0, c: p.l }); P.splice(i, 1); continue; }
+        else if (r < 0.74){ p.l = 520; a = rand(-Math.PI, Math.PI); p.vx = Math.cos(a) * sp * 0.8; p.vy = Math.sin(a) * sp * 0.8; }
+      }
+      if (p.x > w + 10 || p.x < -20 || p.y < -10 || p.y > h + 10){ P.splice(i, 1); continue; }
+      ctx.save(); ctx.strokeStyle = wl(p.l, 0.5); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.05, p.y - p.vy * 0.05); ctx.stroke(); ctx.restore();
+      dot(ctx, p.x, p.y, 3, wl(p.l), 10);
+    }
+    for (var j = F.length - 1; j >= 0; j--){
+      var f = F[j]; f.a += dt;
+      if (f.a > 0.5){ F.splice(j, 1); continue; }
+      dot(ctx, f.x, f.y, 3 + f.a * 18, 'rgba(242,166,90,' + (0.5 - f.a) + ')');
+    }
+  });
+})();
+
+/* ---------- 1.1 Spectrum & photon energy ---------- */
+(function(){
+  var root = document.getElementById('sim-spectrum'); if (!root) return;
+  var cv = $('canvas', root), lam = 550;
+  function band(l){
+    if (l < 280) return 'UV-C (ultraviolet)'; if (l < 400) return 'Ultraviolet';
+    if (l < 450) return 'Visible (violet)'; if (l < 495) return 'Visible (blue)'; if (l < 570) return 'Visible (green)';
+    if (l < 590) return 'Visible (yellow)'; if (l < 620) return 'Visible (orange)'; if (l <= 700) return 'Visible (red)';
+    return 'Near-infrared';
+  }
+  function use(l){
+    if (l < 240) return 'Used for: excimer lasers (193 nm) that reshape the cornea in LASIK; germicidal UV lamps.';
+    if (l < 300) return 'Used for: measuring DNA (260 nm) and protein (280 nm) concentration. Also damages DNA, so it is used to sterilise.';
+    if (l < 400) return 'Used for: exciting natural fluorescence such as NADH (340 nm); causes sunburn and skin damage.';
+    if (l < 500) return 'Used for: exciting fluorescent labels such as GFP (488 nm). Strongly absorbed by blood and melanin.';
+    if (l < 600) return 'Used for: haemoglobin absorbs green/yellow strongly; vascular lasers target it.';
+    if (l <= 700) return 'Used for: red light enters tissue; 660 nm is the red LED in a pulse oximeter.';
+    if (l < 1000) return 'Used for: the optical window — pulse oximetry (940 nm), brain oxygen monitoring, two-photon microscopy, OCT.';
+    return 'Used for: optical tweezers (1064 nm Nd:YAG) and some OCT systems. Invisible to the eye.';
+  }
+  var R = range('sp-range', function(v){ return v + ' nm'; }, function(v){
+    lam = v; var E = 1239.84 / v;
+    setText('sp-l', v + ' nm'); setText('sp-band', band(v));
+    setText('sp-e', E.toFixed(2) + ' eV (' + sci(E * 1.602e-19) + ' J)');
+    setText('sp-bond', E > 3.6 ? 'Yes, above 3.6 eV' : 'No, below 3.6 eV', E > 3.6 ? 'mid' : 'ok');
+    setText('sp-use', use(v));
+  });
+  $$('#sp-presets button').forEach(function(b){ b.addEventListener('click', function(){ R.set(+b.dataset.l); }); });
+
+  addSim(cv, function(t){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var pad = 14, x0 = pad, x1 = w - pad, sy = 16, sh = 22;
+    function X(l){ return x0 + (l - 200) / 1200 * (x1 - x0); }
+    for (var x = x0; x < x1; x += 2){
+      var l = 200 + (x - x0) / (x1 - x0) * 1200;
+      ctx.fillStyle = l < 380 ? 'rgba(130,95,230,0.45)' : (l > 780 ? 'rgba(170,50,70,0.45)' : wl(l));
+      ctx.fillRect(x, sy, 2.2, sh);
+    }
+    text(ctx, 'UV', X(290), sy + sh + 16, { size: 12, color: C.muted, align: 'center' });
+    text(ctx, 'Visible', X(550), sy + sh + 16, { size: 12, color: C.muted, align: 'center' });
+    text(ctx, 'Near-infrared', X(1050), sy + sh + 16, { size: 12, color: C.muted, align: 'center' });
+    var mx = X(lam);
+    ctx.fillStyle = C.text; ctx.beginPath(); ctx.moveTo(mx, sy - 2); ctx.lineTo(mx - 6, sy - 10); ctx.lineTo(mx + 6, sy - 10); ctx.closePath(); ctx.fill();
+    ctx.fillRect(mx - 1, sy, 2, sh);
+
+    var top = sy + sh + 32, bot = h - 14, mW = 64, wx0 = pad, wx1 = w - pad - mW - 10;
+    var mid = (top + bot) / 2, amp = (bot - top) * 0.3, per = 14 + (lam - 200) / 1200 * 110;
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(wx0, mid); ctx.lineTo(wx1, mid); ctx.stroke();
+    ctx.save(); ctx.strokeStyle = wl(lam); ctx.lineWidth = 3; ctx.shadowColor = wl(lam); ctx.shadowBlur = 12;
+    if (isInvisible(lam)) ctx.setLineDash([7, 5]);
+    ctx.beginPath();
+    for (var xx = wx0; xx <= wx1; xx += 2){
+      var y = mid - amp * Math.sin(2 * Math.PI * (xx - t * 70) / per);
+      if (xx === wx0) ctx.moveTo(xx, y); else ctx.lineTo(xx, y);
+    }
+    ctx.stroke(); ctx.restore();
+    // wavelength bracket
+    var bx = wx0 + 10, by = top + 6;
+    ctx.strokeStyle = C.text; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + per, by); ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by + 4); ctx.moveTo(bx + per, by - 4); ctx.lineTo(bx + per, by + 4); ctx.stroke();
+    text(ctx, 'λ = ' + lam + ' nm' + (isInvisible(lam) ? '  (invisible to the eye)' : ''), bx + per + 8, by + 4, { size: 12, color: C.text, font: MONO });
+
+    // energy meter
+    var mx0 = w - pad - mW, bw = 22, bx0 = mx0 + (mW - bw) / 2, mt = top, mb = bot - 16;
+    var E = 1239.84 / lam, fy = mb - (mb - mt) * Math.min(E, 7) / 7, by36 = mb - (mb - mt) * 3.6 / 7;
+    ctx.fillStyle = '#1B2A44'; ctx.fillRect(bx0, mt, bw, mb - mt);
+    ctx.save(); ctx.fillStyle = wl(lam); ctx.shadowColor = wl(lam); ctx.shadowBlur = 10; ctx.fillRect(bx0, fy, bw, mb - fy); ctx.restore();
+    ctx.strokeStyle = C.acc; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(mx0 - 4, by36); ctx.lineTo(mx0 + mW, by36); ctx.stroke(); ctx.setLineDash([]);
+    text(ctx, 'bond', mx0 + mW / 2, by36 - 5, { size: 11, color: C.acc, align: 'center', weight: '600' });
+    text(ctx, E.toFixed(2) + ' eV', mx0 + mW / 2, mb + 14, { size: 11, color: C.text, align: 'center', font: MONO });
+  });
+})();
+
+/* ---------- 1.3 Coherence ---------- */
+(function(){
+  var root = document.getElementById('sim-coh'); if (!root) return;
+  var cv = $('canvas', root), mode = 'laser', W = [];
+  var info = {
+    laser: { dl: '≈ 0.002 nm', L: '≈ 0.2 m', st: 'Yes, always', c: 'ok' },
+    led:   { dl: '≈ 20 nm',    L: '≈ 20 µm', st: 'Only briefly', c: 'mid' },
+    lamp:  { dl: '≈ 300 nm',   L: '≈ 1 µm',  st: 'No', c: 'bad' }
+  };
+  function gen(){
+    W = [];
+    for (var i = 0; i < 6; i++){
+      if (mode === 'laser') W.push({ l: 633, ph: 0 });
+      else if (mode === 'led') W.push({ l: 630 + rand(-12, 12), ph: rand(0, Math.PI * 2) });
+      else W.push({ l: rand(420, 700), ph: rand(0, Math.PI * 2) });
+    }
+    var f = info[mode]; setText('coh-dl', f.dl); setText('coh-L', f.L); setText('coh-step', f.st, f.c);
+  }
+  seg(document.getElementById('coh-modes'), 'm', function(m){ mode = m; gen(); });
+  gen();
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var pad = 12, x0 = pad + 6, x1 = w - pad, areaH = h * 0.62, rowH = areaH / 6, v = 60;
+    text(ctx, 'Six waves from the ' + (mode === 'laser' ? 'laser' : mode === 'led' ? 'LED' : 'lamp'), pad, 16, { size: 12, color: C.muted });
+    W.forEach(function(wv, i){
+      if (mode !== 'laser') wv.ph += (Math.random() - 0.5) * dt * 4;
+      var y0 = 26 + rowH * (i + 0.5), amp = rowH * 0.32, per = wv.l * 0.11;
+      ctx.save(); ctx.strokeStyle = wl(wv.l); ctx.lineWidth = 2; ctx.shadowColor = wl(wv.l); ctx.shadowBlur = 6; ctx.beginPath();
+      for (var x = x0; x <= x1; x += 2){
+        var y = y0 - amp * Math.sin(2 * Math.PI * (x - v * t) / per + wv.ph);
+        if (x === x0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke(); ctx.restore();
+    });
+    var sy = 26 + areaH + 6;
+    ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(pad, sy); ctx.lineTo(w - pad, sy); ctx.stroke();
+    text(ctx, 'Combined wave (what you get)', pad, sy + 16, { size: 12, color: C.text, weight: '600' });
+    var base = (sy + 22 + h - 8) / 2, A = (h - 8 - sy - 22) * 0.45;
+    ctx.save(); ctx.strokeStyle = mode === 'laser' ? wl(633) : '#E7EEF8'; ctx.lineWidth = 3; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 10; ctx.beginPath();
+    for (var xx = x0; xx <= x1; xx += 2){
+      var s = 0;
+      for (var k = 0; k < W.length; k++){ s += Math.sin(2 * Math.PI * (xx - v * t) / (W[k].l * 0.11) + W[k].ph); }
+      var yy = base - A * s / 6;
+      if (xx === x0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+    }
+    ctx.stroke(); ctx.restore();
+  });
+})();
+
+/* ---------- 1.4 Electron wavelength ---------- */
+(function(){
+  if (!document.getElementById('du-range')) return;
+  range('du-range', function(u){
+    var V = Math.pow(10, 1 + u);
+    return V < 1000 ? Math.round(V) + ' V' : (V / 1000).toFixed(1) + ' kV';
+  }, function(u){
+    var V = Math.pow(10, 1 + u), lam = 1.226 / Math.sqrt(V);
+    setText('du-l', lam < 0.1 ? (lam * 1000).toFixed(1) + ' pm' : lam.toFixed(3) + ' nm');
+    setText('du-x', Math.round(500 / lam).toLocaleString('en-US') + '×');
+  });
+})();
+
+/* ---------- 2.1 Five interactions ---------- */
+(function(){
+  var svg = document.getElementById('ix-svg'), box = document.getElementById('ix-btns'); if (!svg || !box) return;
+  var T = {
+    '0': 'Tap a process to highlight it. In real tissue, all five happen at the same time.',
+    '1': 'Reflection: some light bounces straight off the surface. Dermoscopes and reflectance cameras use it.',
+    '2': 'Refraction: light bends as it enters tissue, because tissue (n ≈ 1.35–1.55) slows light more than air.',
+    '3': 'Absorption: a light-eating molecule (chromophore) takes the energy. It becomes heat, chemistry or a new glow.',
+    '4': 'Scattering: light bounces between cells, nuclei and fibres and changes direction many times. It is the biggest effect in most tissue.',
+    '5': 'Transmission: the light that makes it all the way through. A pulse oximeter measures this.'
+  };
+  seg(box, 'ix', function(k){
+    svg.classList.toggle('ix-dim', k !== '0');
+    $$('.ix-g', svg).forEach(function(gp){ gp.classList.toggle('on', gp.dataset.ix === k); });
+    setText('ix-text', T[k]);
+  });
+})();
+
+/* ---------- 2.2 Skin & optical window ---------- */
+(function(){
+  var root = document.getElementById('sim-skin'); if (!root) return;
+  var cv = $('canvas', root), lam = 450, P = [], F = [], acc = 0;
+  var DEPTH = [[300,0.05],[400,0.25],[450,0.4],[500,0.6],[550,0.8],[600,1.5],[650,2.3],[700,2.8],[800,3.4],[900,3.5],[1000,3.3],[1100,3.1],[1200,2.6],[1300,2.2],[1350,1.6],[1400,0.9]];
+  var HB = [[300,2.6],[415,3.2],[450,2.4],[500,1.9],[540,2.4],[560,2.2],[577,2.4],[600,1.2],[650,0.3],[700,0.1],[800,0.0],[900,0.05],[1000,-0.3],[1100,-0.6],[1200,-0.8],[1400,-1.0]];
+  var WA = [[300,-2.2],[400,-3.0],[500,-3.4],[600,-2.6],[700,-2.1],[800,-1.7],[900,-1.2],[970,-0.7],[1000,-0.9],[1100,-0.8],[1200,0.0],[1300,0.1],[1350,0.4],[1400,1.2]];
+  function MEL(l){ return 3.0 - (l - 300) * 0.0035; }
+  var vessels = []; for (var i = 0; i < 9; i++) vessels.push({ x: rand(0.05, 0.95), d: rand(0.3, 1.8), r: rand(0.03, 0.06) });
+  var R = range('sk-range', function(v){ return v + ' nm'; }, function(v){
+    lam = v; var d = interp(DEPTH, v), inW = v >= 650 && v <= 1350;
+    setText('sk-l', v + ' nm');
+    setText('sk-abs', v < 650 ? 'Blood + melanin' : (v > 1350 ? 'Water' : 'Very little'));
+    setText('sk-d', '≈ ' + d.toFixed(1) + ' mm');
+    setText('sk-win', inW ? 'Yes' : 'No', inW ? 'ok' : 'bad');
+  });
+  $$('#sk-presets button').forEach(function(b){ b.addEventListener('click', function(){ R.set(+b.dataset.l); }); });
+
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var wide = w >= 560, pad = 12;
+    var sk = wide ? { x: pad + 34, y: 28, w: w * 0.54 - pad - 34, h: h - 40 } : { x: pad + 34, y: 28, w: w - 2 * pad - 34, h: h * 0.56 - 34 };
+    var ch = wide ? { x: w * 0.6, y: 22, w: w * 0.4 - pad, h: h - 46 } : { x: pad + 34, y: h * 0.56 + 18, w: w - 2 * pad - 40, h: h * 0.44 - 44 };
+    function Y(mm){ return sk.y + mm / 5 * sk.h; }
+    // layers
+    ctx.fillStyle = '#E2C9B5'; ctx.fillRect(sk.x, Y(0), sk.w, Math.max(6, Y(0.1) - Y(0)));
+    ctx.fillStyle = '#7E4A47'; ctx.fillRect(sk.x, Math.max(Y(0) + 6, Y(0.1)), sk.w, Y(2) - Math.max(Y(0) + 6, Y(0.1)));
+    ctx.fillStyle = '#9C8650'; ctx.fillRect(sk.x, Y(2), sk.w, Y(5) - Y(2));
+    vessels.forEach(function(v){ ctx.beginPath(); ctx.ellipse(sk.x + v.x * sk.w, Y(v.d), v.r * sk.w, v.r * sk.w * 0.6, 0, 0, Math.PI * 2); ctx.fillStyle = '#B8262B'; ctx.fill(); });
+    text(ctx, 'epidermis', sk.x + sk.w - 4, Y(0) + 5, { size: 11, color: '#3B2520', align: 'right', base: 'middle', weight: '600' });
+    text(ctx, 'dermis + blood vessels', sk.x + sk.w - 4, Y(1.95) - 6, { size: 11, color: '#F3DCCB', align: 'right' });
+    text(ctx, 'fat', sk.x + sk.w - 4, Y(4.9) - 4, { size: 11, color: '#2A2412', align: 'right', weight: '600' });
+    for (var mm = 0; mm <= 5; mm++){ text(ctx, mm + ' mm', sk.x - 6, Y(mm) + 4, { size: 10, color: C.muted, align: 'right', font: MONO }); }
+    text(ctx, 'light in ↓', sk.x, sk.y - 10, { size: 12, color: wl(lam), weight: '600' });
+    // photons
+    var dmean = interp(DEPTH, lam);
+    if (!RM || P.length < 40){
+      acc += dt * 30;
+      while (acc > 1){ acc--; P.push({ x: rand(0.04, 0.96), d: 0, m: Math.min(5.2, -dmean * Math.log(1 - Math.random() * 0.999)), sp: rand(1.2, 1.8) }); }
+    }
+    for (var k = P.length - 1; k >= 0; k--){
+      var p = P[k];
+      p.d += p.sp * dt; p.x = clamp(p.x + (Math.random() - 0.5) * dt * 0.5, 0.01, 0.99);
+      if (p.d >= p.m){ if (p.m < 5) F.push({ x: p.x, d: p.m, a: 0 }); P.splice(k, 1); continue; }
+      dot(ctx, sk.x + p.x * sk.w, Y(p.d), 2.6, wl(lam), 8);
+    }
+    for (var j = F.length - 1; j >= 0; j--){
+      var f = F[j]; f.a += dt; if (f.a > 0.4){ F.splice(j, 1); continue; }
+      dot(ctx, sk.x + f.x * sk.w, Y(f.d), 2 + f.a * 14, 'rgba(255,230,160,' + (0.5 - f.a) + ')');
+    }
+    // chart
+    function CX(l){ return ch.x + (l - 300) / 1100 * ch.w; }
+    function CY(v){ return ch.y + ch.h - (v + 3.5) / 7 * ch.h; }
+    ctx.fillStyle = 'rgba(127,184,230,0.14)'; ctx.fillRect(CX(650), ch.y, CX(1350) - CX(650), ch.h);
+    text(ctx, 'optical window', (CX(650) + CX(1350)) / 2, ch.y + 12, { size: 11, color: C.blue, align: 'center', weight: '600' });
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(ch.x, ch.y, ch.w, ch.h);
+    function curve(fn, col){ ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); for (var l = 300; l <= 1400; l += 5){ var yy = CY(clamp(fn(l), -3.5, 3.5)); if (l === 300) ctx.moveTo(CX(l), yy); else ctx.lineTo(CX(l), yy); } ctx.stroke(); ctx.restore(); }
+    curve(function(l){ return interp(HB, l); }, '#FF6B5B');
+    curve(MEL, '#D9A066');
+    curve(function(l){ return interp(WA, l); }, '#7FB8E6');
+    ctx.strokeStyle = wl(lam); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(CX(lam), ch.y); ctx.lineTo(CX(lam), ch.y + ch.h); ctx.stroke();
+    [400, 700, 1000, 1300].forEach(function(l){ text(ctx, String(l), CX(l), ch.y + ch.h + 13, { size: 10, color: C.muted, align: 'center', font: MONO }); });
+    text(ctx, 'nm', ch.x + ch.w, ch.y + ch.h + 26, { size: 10, color: C.muted, align: 'right' });
+    var ly = ch.y + ch.h + 26;
+    text(ctx, '● blood', ch.x, ly, { size: 11, color: '#FF6B5B' });
+    text(ctx, '● melanin', ch.x + 58, ly, { size: 11, color: '#D9A066' });
+    text(ctx, '● water', ch.x + 132, ly, { size: 11, color: '#7FB8E6' });
+    text(ctx, 'absorption (schematic)', ch.x + 4, ch.y + ch.h - 6, { size: 10, color: C.muted });
+  });
+})();
+
+/* ---------- 2.3 Beer–Lambert ---------- */
+(function(){
+  var root = document.getElementById('sim-beer'); if (!root) return;
+  var cv = $('canvas', root);
+  var MOL = { nadh: { eps: 6220, lam: 340, ymax: 1.4 }, bsa: { eps: 43824, lam: 280, ymax: 9 } };
+  var mol = 'nadh', c = 50, l = 1, P = [], F = [], acc = 0;
+  function A(){ return MOL[mol].eps * c * 1e-6 * l; }
+  function upd(){
+    var a = A(), T = Math.pow(10, -a);
+    setText('be-a', a.toFixed(3));
+    setText('be-t', T * 100 >= 0.1 ? (T * 100).toFixed(1) + ' %' : '< 0.1 %');
+    setText('be-calc', MOL[mol].eps + ' × ' + c + ' µM × ' + l.toFixed(1) + ' cm');
+  }
+  var RC = range('be-c', function(v){ return v + ' µM'; }, function(v){ c = v; upd(); });
+  var RL = range('be-l', function(v){ return v.toFixed(1) + ' cm'; }, function(v){ l = v; upd(); });
+  var molBox = document.getElementById('be-mol');
+  seg(molBox, 'm', function(m){ mol = m; upd(); });
+  document.getElementById('be-ex').addEventListener('click', function(){
+    mol = 'nadh'; $$('button', molBox).forEach(function(b){ b.classList.toggle('on', b.dataset.m === 'nadh'); });
+    RC.set(50); RL.set(1); upd();
+  });
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var tall = w < 560, pad = 14, beamH = tall ? h * 0.5 : h * 0.56;
+    var by = beamH * 0.5 + 6, lampX = pad + 18, detW = 30, detX = w - pad - detW;
+    var cuvW = 10 + (l / 2) * w * 0.32, cuvX = w * 0.5 - cuvW / 2, cuvH = beamH * 0.62;
+    var a = A(), T = Math.pow(10, -a), col = wl(MOL[mol].lam);
+    // lamp
+    dot(ctx, lampX, by, 13, '#E9E2FF', 16);
+    text(ctx, MOL[mol].lam + ' nm UV', lampX - 6, by + 30, { size: 11, color: C.muted });
+    text(ctx, '(shown violet)', lampX - 6, by + 44, { size: 10, color: C.muted });
+    text(ctx, 'I₀', lampX + 20, by - 16, { size: 13, color: C.text, font: MONO });
+    // cuvette
+    ctx.fillStyle = 'rgba(150,110,255,' + (0.06 + 0.5 * clamp(c / 100, 0, 1) * (mol === 'bsa' ? 1 : 0.6)) + ')';
+    ctx.fillRect(cuvX, by - cuvH / 2, cuvW, cuvH);
+    ctx.strokeStyle = '#C9D5E6'; ctx.lineWidth = 2; ctx.strokeRect(cuvX, by - cuvH / 2, cuvW, cuvH);
+    text(ctx, 'l = ' + l.toFixed(1) + ' cm', cuvX + cuvW / 2, by + cuvH / 2 + 16, { size: 12, color: C.text, align: 'center', font: MONO });
+    text(ctx, 'c = ' + c + ' µM', cuvX + cuvW / 2, by - cuvH / 2 - 8, { size: 12, color: C.text, align: 'center', font: MONO });
+    // detector
+    ctx.fillStyle = '#1B2A44'; ctx.fillRect(detX, by - cuvH / 2, detW, cuvH);
+    ctx.save(); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 10; ctx.fillRect(detX, by + cuvH / 2 - cuvH * T, detW, cuvH * T); ctx.restore();
+    ctx.strokeStyle = '#C9D5E6'; ctx.strokeRect(detX, by - cuvH / 2, detW, cuvH);
+    text(ctx, 'I', detX - 10, by - 16, { size: 13, color: C.text, font: MONO, align: 'right' });
+    text(ctx, 'detector', detX + detW, by + cuvH / 2 + 16, { size: 11, color: C.muted, align: 'right' });
+    // photons
+    acc += dt * 45;
+    while (acc > 1){ acc--; P.push({ x: lampX + 14, y: by + rand(-cuvH * 0.3, cuvH * 0.3), ab: Math.random() > T, ax: cuvX + Math.random() * cuvW }); }
+    for (var i = P.length - 1; i >= 0; i--){
+      var p = P[i]; p.x += 150 * dt;
+      if (p.ab && p.x >= p.ax){ F.push({ x: p.x, y: p.y, a: 0 }); P.splice(i, 1); continue; }
+      if (p.x >= detX){ P.splice(i, 1); continue; }
+      dot(ctx, p.x, p.y, 2.6, col, 8);
+    }
+    for (var j = F.length - 1; j >= 0; j--){ var f = F[j]; f.a += dt; if (f.a > 0.35){ F.splice(j, 1); continue; } dot(ctx, f.x, f.y, 2 + f.a * 12, 'rgba(255,230,160,' + (0.5 - f.a) + ')'); }
+    // graph
+    var gx = pad + 38, gy = beamH + 22, gw = w - gx - pad - 4, gh = h - gy - 30, ym = MOL[mol].ymax;
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(gx, gy, gw, gh);
+    for (var k = 1; k < 4; k++){ var yy = gy + gh * k / 4; ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(gx, yy); ctx.lineTo(gx + gw, yy); ctx.stroke(); text(ctx, (ym * (4 - k) / 4).toFixed(ym < 2 ? 2 : 1), gx - 4, yy + 4, { size: 10, color: C.muted, align: 'right', font: MONO }); }
+    text(ctx, 'A', gx - 4, gy + 10, { size: 11, color: C.text, align: 'right', font: MONO });
+    [0, 50, 100].forEach(function(v){ text(ctx, v + '', gx + gw * v / 100, gy + gh + 13, { size: 10, color: C.muted, align: 'center', font: MONO }); });
+    text(ctx, 'concentration (µM)', gx + gw, gy + gh + 26, { size: 11, color: C.muted, align: 'right' });
+    var slope = MOL[mol].eps * 1e-6 * l;
+    ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip();
+    ctx.strokeStyle = C.acc; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh - gh * slope * 100 / ym); ctx.stroke();
+    ctx.restore();
+    var px = gx + gw * c / 100, py = gy + gh - gh * Math.min(a, ym) / ym;
+    dot(ctx, px, py, 6, C.acc, 10);
+    text(ctx, 'A = ' + a.toFixed(3), clamp(px + 8, gx + 4, gx + gw - 90), clamp(py - 8, gy + 14, gy + gh - 4), { size: 12, color: C.text, font: MONO });
+  });
+})();
+
+/* ---------- 2.4 Scattering ---------- */
+(function(){
+  var root = document.getElementById('sim-scat'); if (!root) return;
+  var cv = $('canvas', root), u = 0, cm = 'both', P = [], acc = 0, stats = { b: { n: 0, s: 0 }, r: { n: 0, s: 0 } };
+  var parts = []; for (var i = 0; i < 70; i++){ var a = rand(0, Math.PI * 2), r = Math.sqrt(Math.random()); parts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r }); }
+  function nexp(){ return 4 - 3.5 * u; }
+  function pS(lamb){ return clamp((0.15 + 0.35 * u) * Math.pow(550 / lamb, nexp()), 0, 0.95); }
+  function phase(th){ var g = 0.85, hg = (1 - g * g) / Math.pow(1 + g * g - 2 * g * Math.cos(th), 1.5), ray = 0.75 * (1 + Math.cos(th) * Math.cos(th)); return (1 - u) * ray + u * hg * 0.15; }
+  var pmax = 1;
+  function calcMax(){ pmax = 0; for (var th = 0; th <= Math.PI; th += 0.05) pmax = Math.max(pmax, phase(th)); }
+  function sampleTheta(){ for (var k = 0; k < 200; k++){ var th = Math.random() * Math.PI; if (Math.random() * pmax <= phase(th)) return th * (Math.random() < 0.5 ? -1 : 1); } return 0; }
+  function resetStats(){ stats = { b: { n: 0, s: 0 }, r: { n: 0, s: 0 } }; }
+  range('sc-range', function(v){ return v < 0.3 ? 'tiny' : (v < 0.65 ? 'medium' : 'large'); }, function(v){
+    u = v; calcMax(); resetStats();
+    setText('sc-size', v < 0.3 ? 'Much smaller than λ' : (v < 0.65 ? 'In between' : 'About λ or bigger'));
+    setText('sc-ratio', Math.pow(700 / 450, nexp()).toFixed(1) + '×');
+  });
+  seg(document.getElementById('sc-col'), 'c', function(c){ cm = c; resetStats(); });
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var cx = w * 0.46, cy = h * 0.55, R = Math.min(w, h) * 0.2, sp = Math.min(w, h) * 0.45;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fillStyle = 'rgba(201,213,230,0.05)'; ctx.fill();
+    parts.forEach(function(p){ dot(ctx, cx + p.x * R * 0.95, cy + p.y * R * 0.95, 1.4 + u * 5, 'rgba(201,213,230,0.55)'); });
+    text(ctx, 'light in →', 10, cy - R - 8, { size: 12, color: C.muted });
+    acc += dt * 40;
+    while (acc > 1){
+      acc--;
+      var col = cm === 'both' ? (Math.random() < 0.5 ? 'b' : 'r') : (cm === 'blue' ? 'b' : 'r');
+      P.push({ x: -4, y: cy + rand(-R * 0.6, R * 0.6), vx: sp, vy: 0, c: col, st: 0, go: 0 });
+    }
+    for (var i = P.length - 1; i >= 0; i--){
+      var p = P[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.st === 0 && Math.hypot(p.x - cx, p.y - cy) < R){
+        p.st = 1; var lamb = p.c === 'b' ? 450 : 700; stats[p.c].n++;
+        if (Math.random() < pS(lamb)){ p.st = 2; p.go = rand(0.2, 1.5) * R; stats[p.c].s++; }
+      }
+      if (p.st === 2){ p.go -= sp * dt; if (p.go <= 0){ var th = sampleTheta(), a0 = Math.atan2(p.vy, p.vx), a = a0 + th; p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp; p.st = 3; } }
+      if (p.x > w + 6 || p.x < -10 || p.y < -6 || p.y > h + 6){ P.splice(i, 1); continue; }
+      dot(ctx, p.x, p.y, 2.6, p.c === 'b' ? '#4F8CFF' : '#FF4D3D', 8);
+    }
+    // polar inset
+    var ix = w - 62, iy = 58, ir = 40;
+    ctx.fillStyle = 'rgba(11,19,34,0.8)'; ctx.fillRect(ix - ir - 14, iy - ir - 22, ir * 2 + 28, ir * 2 + 40);
+    text(ctx, 'directions', ix, iy - ir - 8, { size: 11, color: C.muted, align: 'center' });
+    ctx.save(); ctx.beginPath();
+    for (var th = -Math.PI; th <= Math.PI + 0.01; th += 0.05){ var rr = ir * phase(Math.abs(th)) / pmax, xx = ix + Math.cos(th) * rr, yy = iy + Math.sin(th) * rr; if (th === -Math.PI) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); }
+    ctx.closePath(); ctx.fillStyle = 'rgba(242,166,90,0.35)'; ctx.fill(); ctx.strokeStyle = C.acc; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+    arrow(ctx, ix - ir - 8, iy, ix - 6, iy, C.muted, 1.5);
+    text(ctx, 'forward →', ix, iy + ir + 14, { size: 10, color: C.muted, align: 'center' });
+    var fb = stats.b.n ? Math.round(100 * stats.b.s / stats.b.n) + ' %' : '–', fr = stats.r.n ? Math.round(100 * stats.r.s / stats.r.n) + ' %' : '–';
+    if ((T * 10 | 0) % 3 === 0){ setText('sc-b', fb); setText('sc-r', fr); }
+  });
+})();
+
+/* ---------- 3.1 Jablonski ---------- */
+(function(){
+  var root = document.getElementById('sim-jab'); if (!root) return;
+  var cv = $('canvas', root), st = 'idle', k = 0, auto = false, path = 'f', idleT = 0;
+  var D = { 'in': 0.9, up: 0.35, relax: 0.9, wait: 0.8, emit: 1.1, isc: 0.9, twait: 1.8, phos: 1.2 };
+  var MSG = {
+    idle: ['Tap “Shine blue light” to start.', '–'],
+    'in': ['1. A blue photon (470 nm) arrives at the molecule.', '≈ 10⁻¹⁵ s to absorb'],
+    up: ['2. Absorbed! The electron jumps up to the excited state S₁.', '≈ 10⁻¹⁵ s'],
+    relax: ['3. It slides to the bottom of S₁, losing a little energy as heat.', '10⁻¹² – 10⁻¹⁰ s'],
+    wait: ['4. It stays excited for a short moment…', '≈ 1–10 ns'],
+    emit: ['5. It drops back to S₀ and sends out a green photon. Fluorescence!', '≈ 1–10 ns after absorbing'],
+    isc: ['4b. Rarely, it crosses over to the triplet state T₁ instead.', 'slow, “forbidden” step'],
+    twait: ['It gets stuck in T₁ for a long time…', 'µs to seconds'],
+    phos: ['5b. Finally it drops down and glows orange. Phosphorescence: the glow in the dark.', 'µs to seconds']
+  };
+  function go(s){ st = s; k = 0; setText('jb-step', MSG[s][0]); setText('jb-time', MSG[s][1]);
+    if (s === 'emit') setText('jb-out', '520 nm (green)'); else if (s === 'phos') setText('jb-out', '600 nm (orange)'); else if (s === 'in') setText('jb-out', '–'); }
+  function start(){ if (st !== 'idle') return; path = (document.getElementById('jb-phos').checked && Math.random() < 0.5) ? 'p' : 'f'; go('in'); }
+  document.getElementById('jb-go').addEventListener('click', start);
+  document.getElementById('jb-auto').addEventListener('click', function(){ auto = !auto; this.textContent = 'Auto-repeat: ' + (auto ? 'on' : 'off'); this.classList.toggle('on', auto); if (auto) start(); });
+  var NEXT = { 'in': 'up', up: 'relax', relax: function(){ return path === 'p' ? 'isc' : 'wait'; }, wait: 'emit', emit: 'idle', isc: 'twait', twait: 'phos', phos: 'idle' };
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var S0 = h * 0.84, S1 = h * 0.3, T1 = h * 0.5, xL = w * 0.08, xM = w * 0.56, xR = w * 0.94;
+    var xa = w * 0.2, xe = w * 0.4, xt = w * 0.76;
+    function lev(x0, x1, y, lab, vib){
+      ctx.strokeStyle = C.text; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(231,238,248,0.35)'; ctx.lineWidth = 1.5;
+      for (var v = 1; v <= vib; v++){ ctx.beginPath(); ctx.moveTo(x0, y - v * 13); ctx.lineTo(x1, y - v * 13); ctx.stroke(); }
+      text(ctx, lab, x1 + 6, y + 5, { size: 15, weight: '600', font: '"Source Serif 4", Georgia, serif' });
+    }
+    lev(xL, xR - 26, S0, 'S₀', 2); lev(xL, xM, S1, 'S₁', 2); lev(xM + w * 0.1, xR - 26, T1, 'T₁', 1);
+    text(ctx, 'Energy ↑', 6, 16, { size: 12, color: C.muted });
+    text(ctx, 'ground state', xL, S0 + 20, { size: 11, color: C.muted });
+    text(ctx, 'excited singlet', xL, S1 - 38, { size: 11, color: C.muted });
+    text(ctx, 'triplet', xM + w * 0.1, T1 - 24, { size: 11, color: C.muted });
+    if (st !== 'idle'){
+      k += dt / D[st];
+      if (k >= 1){
+        var n = NEXT[st]; n = typeof n === 'function' ? n() : n; go(n);
+        if (n === 'idle'){ idleT = 0; }
+      }
+    } else if (auto){ idleT += dt; if (idleT > 0.8) start(); }
+    var ex = xa, ey = S0, kk = clamp(k, 0, 1);
+    if (st === 'in'){ var hx = lerp(0, xa, kk); wavy(ctx, Math.max(0, hx - 70), S0 - 10, hx, S0, '#4F8CFF', 5, 12, 3); }
+    else if (st === 'up'){ ey = lerp(S0, S1 - 26, kk); }
+    else if (st === 'relax'){ ey = lerp(S1 - 26, S1, kk); ex = lerp(xa, xe, kk);
+      for (var q = 0; q < 3; q++){ var hy = S1 - 26 + q * 9; text(ctx, '~', ex + 14 + q * 6, hy, { size: 14, color: C.acc }); }
+      text(ctx, 'heat', ex + 34, S1 - 16, { size: 11, color: C.acc }); }
+    else if (st === 'wait'){ ex = xe; ey = S1; }
+    else if (st === 'emit'){ ex = xe; ey = S1; var kd = clamp(kk * 2.2, 0, 1); ey = lerp(S1, S0, kd);
+      if (kd >= 1){ var tx = lerp(xe, w + 40, (kk - 0.45) / 0.55); wavy(ctx, xe + 8, S0 - 8, Math.max(xe + 9, tx), S0 - 8 - (tx - xe) * 0.25, wl(520), 5, 15, 3); } }
+    else if (st === 'isc'){ ex = lerp(xe, xt, kk); ey = lerp(S1, T1, kk); }
+    else if (st === 'twait'){ ex = xt; ey = T1; }
+    else if (st === 'phos'){ ex = xt; var kp = clamp(kk * 2.5, 0, 1); ey = lerp(T1, S0, kp);
+      if (kp >= 1){ var tx2 = lerp(xt, w + 40, (kk - 0.4) / 0.6); wavy(ctx, xt + 8, S0 - 8, Math.max(xt + 9, tx2), S0 - 8 - (tx2 - xt) * 0.3, wl(600), 5, 17, 3); } }
+    if (st === 'up' || st === 'relax'){ ctx.strokeStyle = 'rgba(79,140,255,0.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xa, S0); ctx.lineTo(xa, Math.min(ey, S0)); ctx.stroke(); }
+    if (st !== 'idle' && st !== 'in'){ ctx.strokeStyle = 'rgba(231,238,248,0.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(xa, S0, 7, 0, Math.PI * 2); ctx.stroke(); }
+    var pulse = st === 'wait' || st === 'twait' ? 4 + Math.sin(t * 10) * 2 : 0;
+    dot(ctx, ex, ey, 7 + pulse * 0.3, '#FFFFFF', 14 + pulse * 3);
+  });
+})();
+
+/* ---------- 3.2 Spectrophotometer ---------- */
+(function(){
+  var root = document.getElementById('sim-spec'); if (!root) return;
+  var cv = $('canvas', root), sample = 'dna', scanning = false, lam = 220, trace = [];
+  function G(l, c, s, a){ return a * Math.exp(-0.5 * Math.pow((l - c) / s, 2)); }
+  var SPEC = {
+    dna: function(l){ return G(l, 260, 22, 1.0) + G(l, 195, 18, 1.6); },
+    protein: function(l){ return G(l, 280, 14, 0.55) + G(l, 200, 18, 3.0); },
+    nadh: function(l){ return G(l, 260, 20, 1.0) + G(l, 340, 25, 0.38) + G(l, 195, 18, 1.4); },
+    hb: function(l){ return G(l, 415, 14, 1.65) + G(l, 541, 10, 0.22) + G(l, 577, 9, 0.24) + G(l, 345, 30, 0.25) + G(l, 275, 20, 0.3); },
+    blank: function(){ return 0.01; }
+  };
+  var RES = { dna: 'Peak at 260 nm → DNA', protein: 'Peak at 280 nm → protein', nadh: 'Peaks at 260 and 340 nm → NADH', hb: 'Peaks at 415, 541, 577 nm → haemoglobin', blank: 'Flat → blank reference' };
+  seg(document.getElementById('spc-samples'), 's', function(s){ sample = s; trace = []; scanning = false; setText('spc-res', 'Press Scan'); setText('spc-l', '–'); setText('spc-a', '–'); });
+  document.getElementById('spc-go').addEventListener('click', function(){ trace = []; lam = 220; scanning = true; setText('spc-res', 'Scanning…'); });
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    if (scanning){
+      lam += dt * 110;
+      var A = SPEC[sample](Math.min(lam, 700)); trace.push([Math.min(lam, 700), A]);
+      setText('spc-l', Math.round(Math.min(lam, 700)) + ' nm'); setText('spc-a', A.toFixed(2));
+      if (lam >= 700){ scanning = false; setText('spc-res', RES[sample]); }
+    }
+    var cur = scanning ? lam : (trace.length ? 700 : 500), beamCol = trace.length || scanning ? wl(cur) : wl(500);
+    var dh = h * 0.36, by = dh * 0.5 + 4, pad = 14;
+    var xs = [w * 0.08, w * 0.3, w * 0.55, w * 0.82];
+    // beam
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xs[0], by); ctx.lineTo(xs[1], by); ctx.stroke();
+    var Anow = scanning || trace.length ? SPEC[sample](Math.min(cur, 700)) : 0, Tn = Math.pow(10, -Anow);
+    ctx.save(); ctx.strokeStyle = beamCol; ctx.shadowColor = beamCol; ctx.shadowBlur = 10; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(xs[1], by); ctx.lineTo(xs[2], by); ctx.stroke();
+    ctx.globalAlpha = clamp(Tn, 0.08, 1); ctx.beginPath(); ctx.moveTo(xs[2], by); ctx.lineTo(xs[3], by); ctx.stroke(); ctx.restore();
+    dot(ctx, xs[0], by, 12, '#FFF6DA', 18);
+    ctx.fillStyle = '#2A3A57'; ctx.fillRect(xs[1] - 12, by - 18, 24, 36);
+    for (var s = 0; s < 6; s++){ ctx.fillStyle = 'rgba(231,238,248,0.5)'; ctx.fillRect(xs[1] - 10 + s * 4, by - 16, 1.5, 32); }
+    ctx.fillStyle = 'rgba(150,110,255,0.22)'; ctx.fillRect(xs[2] - 14, by - 22, 28, 44); ctx.strokeStyle = '#C9D5E6'; ctx.lineWidth = 2; ctx.strokeRect(xs[2] - 14, by - 22, 28, 44);
+    ctx.fillStyle = '#1B2A44'; ctx.fillRect(xs[3] - 12, by - 20, 24, 40); ctx.strokeStyle = '#C9D5E6'; ctx.strokeRect(xs[3] - 12, by - 20, 24, 40);
+    ctx.save(); ctx.fillStyle = beamCol; ctx.fillRect(xs[3] - 10, by + 18 - 36 * Tn, 20, 36 * Tn); ctx.restore();
+    ['lamp', 'grating', 'sample', 'detector'].forEach(function(n, i){ text(ctx, n, xs[i], by + 40, { size: 11, color: C.muted, align: 'center' }); });
+    // chart
+    var gx = pad + 34, gy = dh + 18, gw = w - gx - pad, gh = h - gy - 30, ym = 1.8;
+    function X(l){ return gx + (l - 220) / 480 * gw; }
+    function Y(a){ return gy + gh - Math.min(a, ym) / ym * gh; }
+    for (var x = gx; x < gx + gw; x += 3){ var l = 220 + (x - gx) / gw * 480; ctx.fillStyle = l < 380 ? 'rgba(130,95,230,0.25)' : wl(l, 0.28); ctx.fillRect(x, gy + gh + 1, 3, 5); }
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(gx, gy, gw, gh);
+    [0.5, 1.0, 1.5].forEach(function(a){ ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(gx, Y(a)); ctx.lineTo(gx + gw, Y(a)); ctx.stroke(); text(ctx, a.toFixed(1), gx - 4, Y(a) + 4, { size: 10, color: C.muted, align: 'right', font: MONO }); });
+    text(ctx, 'A', gx - 4, gy + 10, { size: 11, align: 'right', font: MONO });
+    [260, 280, 340, 415, 541, 577, 700].forEach(function(l){ if (sample === 'hb' || l === 260 || l === 280 || l === 340 || l === 700) text(ctx, String(l), X(l), gy + gh + 18, { size: 9, color: C.muted, align: 'center', font: MONO }); });
+    text(ctx, 'wavelength (nm)', gx + gw, gy + gh + 30, { size: 10, color: C.muted, align: 'right' });
+    if (trace.length > 1){
+      ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip();
+      ctx.strokeStyle = C.acc; ctx.lineWidth = 2.5; ctx.beginPath();
+      trace.forEach(function(p, i){ if (i === 0) ctx.moveTo(X(p[0]), Y(p[1])); else ctx.lineTo(X(p[0]), Y(p[1])); });
+      ctx.stroke(); ctx.restore();
+      var lp = trace[trace.length - 1]; dot(ctx, X(lp[0]), Y(lp[1]), 4, C.acc, 8);
+    } else {
+      text(ctx, 'Press “Scan” to draw the spectrum', gx + gw / 2, gy + gh / 2, { size: 13, color: C.muted, align: 'center' });
+    }
+  });
+})();
+
+/* ---------- 3.3 Pulse oximeter ---------- */
+(function(){
+  var root = document.getElementById('sim-oxi'); if (!root) return;
+  var cv = $('canvas', root), spo2 = 98, hr = 72;
+  function Rv(){ return (110 - spo2) / 25; }
+  function upd(){
+    var r = Rv(), cls = spo2 >= 95 ? 'ok' : (spo2 >= 90 ? 'mid' : 'bad');
+    setText('ox-s', spo2 + ' %', cls); setText('ox-hr', hr + ' bpm'); setText('ox-r', r.toFixed(2));
+    setText('ox-st', spo2 >= 95 ? 'Normal' : (spo2 >= 90 ? 'Slightly low' : 'Low oxygen'), cls);
+  }
+  range('ox-spo2', function(v){ return v + ' %'; }, function(v){ spo2 = v; upd(); });
+  range('ox-hrr', function(v){ return v + ' bpm'; }, function(v){ hr = v; upd(); });
+  function pulse(ph){ return Math.exp(-Math.pow((ph - 0.15) / 0.06, 2)) + 0.35 * Math.exp(-Math.pow((ph - 0.42) / 0.09, 2)); }
+  function frac(x){ return x - Math.floor(x); }
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var tall = w < 560, pad = 14;
+    var fz = tall ? { x: w * 0.5, y: h * 0.25, s: Math.min(w, h * 0.5) } : { x: w * 0.17, y: h * 0.5, s: Math.min(w * 0.34, h) };
+    var fw = fz.s * 0.34, fh = fz.s * 0.46, fx = fz.x - fw / 2, fy = fz.y - fh / 2;
+    var redOn = Math.floor(t / 0.35) % 2 === 0, ph = frac(t * hr / 60), pv = pulse(ph);
+    // LEDs
+    var ledW = fw * 0.36, ledH = 14, ly = fy - 26;
+    ctx.save(); ctx.fillStyle = redOn ? '#FF3B30' : '#5A1F1F'; if (redOn){ ctx.shadowColor = '#FF3B30'; ctx.shadowBlur = 18; } ctx.fillRect(fz.x - ledW - 3, ly, ledW, ledH); ctx.restore();
+    ctx.save(); ctx.fillStyle = !redOn ? '#B5485D' : '#3A1A24'; if (!redOn){ ctx.shadowColor = '#E07A9A'; ctx.shadowBlur = 18; } ctx.fillRect(fz.x + 3, ly, ledW, ledH); ctx.restore();
+    text(ctx, '660', fz.x - ledW / 2 - 3, ly - 4, { size: 10, color: C.muted, align: 'center', font: MONO });
+    text(ctx, '940', fz.x + ledW / 2 + 3, ly - 4, { size: 10, color: C.muted, align: 'center', font: MONO });
+    // beam
+    var bx = redOn ? fz.x - ledW / 2 - 3 : fz.x + ledW / 2 + 3, bc = redOn ? 'rgba(255,59,48,0.35)' : 'rgba(224,122,154,0.3)';
+    ctx.fillStyle = bc; ctx.fillRect(bx - 6, ly + ledH, 12, fh + 32);
+    // finger
+    ctx.save(); ctx.beginPath(); var rr = fw / 2;
+    ctx.moveTo(fx, fy + fh); ctx.lineTo(fx, fy + rr); ctx.arc(fx + rr, fy + rr, rr, Math.PI, 0); ctx.lineTo(fx + fw, fy + fh); ctx.closePath();
+    ctx.fillStyle = 'rgba(214,166,136,0.85)'; ctx.fill(); ctx.restore();
+    var ar = fw * 0.12 * (1 + 0.35 * pv);
+    ctx.beginPath(); ctx.ellipse(fz.x, fy + fh * 0.58, fw * 0.32, ar, 0, 0, Math.PI * 2);
+    var oxCol = 'rgb(' + Math.round(lerp(120, 205, (spo2 - 70) / 30)) + ',' + Math.round(lerp(20, 30, (spo2 - 70) / 30)) + ',' + Math.round(lerp(60, 40, (spo2 - 70) / 30)) + ')';
+    ctx.fillStyle = oxCol; ctx.fill();
+    text(ctx, 'artery', fz.x, fy + fh * 0.58 + ar + 14, { size: 11, color: '#3B2520', align: 'center', weight: '600' });
+    ctx.fillStyle = '#1B2A44'; ctx.fillRect(fz.x - fw * 0.3, fy + fh + 6, fw * 0.6, 12);
+    ctx.strokeStyle = '#C9D5E6'; ctx.lineWidth = 1.5; ctx.strokeRect(fz.x - fw * 0.3, fy + fh + 6, fw * 0.6, 12);
+    text(ctx, 'photodiode', fz.x, fy + fh + 32, { size: 11, color: C.muted, align: 'center' });
+    text(ctx, 'LED switching slowed down', fz.x, Math.max(14, ly - 18), { size: 10, color: C.muted, align: 'center' });
+    // traces
+    var tr = tall ? { x: pad + 6, y: h * 0.53, w: w - 2 * pad - 6, h: h * 0.45 } : { x: w * 0.38, y: 14, w: w * 0.62 - pad, h: h - 28 };
+    var rowH = tr.h / 2, R = Rv(), base = rowH * 0.5, ampIR = rowH * 0.28, ampRed = ampIR * R, speed = 70;
+    [['Red 660 nm', '#FF3B30', ampRed], ['Infrared 940 nm', '#E07A9A', ampIR]].forEach(function(row, i){
+      var y0 = tr.y + rowH * i, mid = y0 + rowH * 0.72;
+      ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(tr.x, mid); ctx.lineTo(tr.x + tr.w, mid); ctx.stroke();
+      text(ctx, row[0], tr.x, y0 + 14, { size: 12, color: row[1], weight: '600' });
+      ctx.save(); ctx.strokeStyle = row[1]; ctx.lineWidth = 2.5; ctx.shadowColor = row[1]; ctx.shadowBlur = 6; ctx.beginPath();
+      for (var x = 0; x <= tr.w; x += 2){
+        var tt = t - (tr.w - x) / speed, v = pulse(frac(tt * hr / 60));
+        var y = mid - v * row[2];
+        if (x === 0) ctx.moveTo(tr.x + x, y); else ctx.lineTo(tr.x + x, y);
+      }
+      ctx.stroke(); ctx.restore();
+      text(ctx, 'pulse size ' + (i === 0 ? R.toFixed(2) : '1.00'), tr.x + tr.w, y0 + 14, { size: 11, color: C.muted, align: 'right', font: MONO });
+    });
+  });
+})();
+
+/* ---------- 3.5 Raman ---------- */
+(function(){
+  var root = document.getElementById('sim-raman'); if (!root) return;
+  var cv = $('canvas', root), P = [], acc = 0, n = 0, rn = 0, laser = 785;
+  function count(){ setText('ra-n', n.toLocaleString('en-US')); setText('ra-r', rn.toLocaleString('en-US')); }
+  function emit(cx, cy, sp){
+    var r = Math.random(), type = 'ray';
+    if (r < 1 / 40){ type = Math.random() < 0.85 ? 'stokes' : 'anti'; rn++; }
+    n++; var a = rand(0, Math.PI * 2);
+    P.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, s: 1, type: type });
+  }
+  document.getElementById('ra-burst').addEventListener('click', function(){
+    for (var i = 0; i < 1000; i++){ if (Math.random() < 1 / 40){ rn++; } n++; }
+    burst = 40; count();
+  });
+  document.getElementById('ra-reset').addEventListener('click', function(){ n = 0; rn = 0; count(); });
+  var burst = 0;
+  var BANDS = [[1004, 'Phenylalanine (proteins)'], [1090, 'Phosphate (DNA backbone)'], [1450, 'CH₂ bending (lipids, proteins)'], [1655, 'Amide I (proteins)'], [2850, 'CH₂ stretch (lipids)'], [2930, 'CH₃ stretch (proteins)']];
+  var shift = 1004;
+  function calc(){
+    var inv = 1e7 / laser - shift, ls = 1e7 / inv;
+    setText('ra-ls', ls.toFixed(0) + ' nm');
+    var best = null, bd = 1e9; BANDS.forEach(function(b){ var d = Math.abs(b[0] - shift); if (d < bd){ bd = d; best = b; } });
+    setText('ra-band', bd <= 60 ? best[1] + ' (' + best[0] + ')' : 'No common band here');
+  }
+  range('ra-shift', function(v){ return v + ' cm⁻¹'; }, function(v){ shift = v; calc(); });
+  seg(document.getElementById('ra-laser'), 'l', function(l){ laser = +l; calc(); });
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var cx = w * 0.5, cy = h * 0.46, sp = Math.min(w, h) * 0.5, sep = 26 + 7 * Math.sin(t * 14);
+    // laser beam
+    ctx.fillStyle = 'rgba(60,200,90,0.12)'; ctx.fillRect(0, cy - 10, cx, 20);
+    text(ctx, 'laser 532 nm →', 10, cy - 16, { size: 12, color: '#3CC85A', weight: '600' });
+    acc += dt * 14;
+    while (acc > 1){ acc--; P.push({ x: -4, y: cy + rand(-6, 6), vx: sp, vy: 0, s: 0, type: 'ray' }); }
+    if (burst > 0){ for (var b = 0; b < 3 && burst > 0; b++, burst--){ var a = rand(0, Math.PI * 2), ty = Math.random() < 0.08 ? (Math.random() < 0.85 ? 'stokes' : 'anti') : 'ray'; P.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, s: 1, type: ty }); } }
+    // molecule
+    ctx.strokeStyle = '#C9D5E6'; ctx.lineWidth = 2; ctx.beginPath();
+    var x0 = cx - sep / 2, x1 = cx + sep / 2;
+    for (var i = 0; i <= 10; i++){ var xx = lerp(x0, x1, i / 10), yy = cy + (i % 2 ? -5 : 5) * (i > 0 && i < 10 ? 1 : 0); if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); }
+    ctx.stroke();
+    dot(ctx, x0, cy, 13, '#8FA6C8'); dot(ctx, x1, cy, 9, '#E7EEF8');
+    text(ctx, 'vibrating bond', cx, cy + 34, { size: 11, color: C.muted, align: 'center' });
+    var COL = { ray: '#3CC85A', stokes: '#F08A24', anti: '#4F8CFF' };
+    for (var j = P.length - 1; j >= 0; j--){
+      var p = P[j]; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.s === 0 && p.x >= cx - 12){ P.splice(j, 1); emit(cx, cy, sp); count(); continue; }
+      if (p.x < -10 || p.x > w + 10 || p.y < -10 || p.y > h + 10){ P.splice(j, 1); continue; }
+      dot(ctx, p.x, p.y, p.type === 'ray' ? 2.6 : 4.5, COL[p.type], p.type === 'ray' ? 6 : 14);
+    }
+    var ly = h - 14;
+    text(ctx, '● same colour (Rayleigh)', 10, ly - 36, { size: 12, color: COL.ray });
+    text(ctx, '● redder: Stokes Raman', 10, ly - 18, { size: 12, color: COL.stokes });
+    text(ctx, '● bluer: anti-Stokes Raman', 10, ly, { size: 12, color: COL.anti });
+  });
+  count();
+})();
+
+/* ---------- 4.2 Resolution ---------- */
+(function(){
+  var root = document.getElementById('sim-res'); if (!root) return;
+  var cv = $('canvas', root), sep = 300, lam = 500, NA = 1.4, sted = false, dirty = true;
+  var off = document.createElement('canvas'), GW = 240, GH = 110; off.width = GW; off.height = GH;
+  var octx = off.getContext('2d'), FOV = 1200, profile = [];
+  function d(){ return sted ? 30 : lam / (2 * NA); }
+  function compute(){
+    var sig = d() / 3, x1 = FOV / 2 - sep / 2, x2 = FOV / 2 + sep / 2, img = octx.createImageData(GW, GH), col = wlRGBarr(lam), Imax = 0, vals = [];
+    var nmPerPx = FOV / GW, cyy = GH / 2;
+    for (var y = 0; y < GH; y++){ for (var x = 0; x < GW; x++){
+      var X = x * nmPerPx, Y = (y - cyy) * nmPerPx, r1 = (X - x1) * (X - x1) + Y * Y, r2 = (X - x2) * (X - x2) + Y * Y;
+      var I = Math.exp(-r1 / (2 * sig * sig)) + Math.exp(-r2 / (2 * sig * sig)); vals.push(I); if (I > Imax) Imax = I;
+    } }
+    for (var i = 0; i < vals.length; i++){ var v = Math.pow(vals[i] / Imax, 0.8); img.data[i * 4] = col[0] * v; img.data[i * 4 + 1] = col[1] * v; img.data[i * 4 + 2] = col[2] * v; img.data[i * 4 + 3] = 255; }
+    octx.putImageData(img, 0, 0);
+    profile = []; for (var xx = 0; xx < GW; xx++) profile.push(vals[(GH >> 1) * GW + xx] / Imax);
+    var dd = d(), res = sep >= dd ? ['Two dots seen', 'ok'] : (sep >= 0.67 * dd ? ['Only just separate', 'mid'] : ['Blurred into one', 'bad']);
+    setText('rs-d', Math.round(dd) + ' nm'); setText('rs-s', sep + ' nm'); setText('rs-res', res[0], res[1]);
+    dirty = false;
+  }
+  range('rs-sep', function(v){ return v + ' nm'; }, function(v){ sep = v; dirty = true; });
+  range('rs-lam', function(v){ return v + ' nm'; }, function(v){ lam = v; dirty = true; });
+  range('rs-na', function(v){ return v.toFixed(2); }, function(v){ NA = v; dirty = true; });
+  document.getElementById('rs-sted').addEventListener('change', function(){ sted = this.checked; dirty = true; });
+  addSim(cv, function(){
+    if (dirty) compute();
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var pad = 12, iw = w - 2 * pad, ih = Math.min(h * 0.58, iw * GH / GW), ix = pad, iy = pad;
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(off, ix, iy, iw, ih);
+    var pxPerNm = iw / FOV, sb = 200 * pxPerNm;
+    ctx.fillStyle = '#E7EEF8'; ctx.fillRect(ix + 10, iy + ih - 14, sb, 4);
+    text(ctx, '200 nm', ix + 10, iy + ih - 20, { size: 11, font: MONO });
+    text(ctx, 'microscope image', ix + iw - 8, iy + 16, { size: 11, color: C.muted, align: 'right' });
+    // profile
+    var py = iy + ih + 18, ph = h - py - 24;
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(ix, py, iw, ph);
+    ctx.save(); ctx.beginPath(); ctx.moveTo(ix, py + ph);
+    profile.forEach(function(v, i){ ctx.lineTo(ix + i / (GW - 1) * iw, py + ph - v * ph * 0.9); });
+    ctx.lineTo(ix + iw, py + ph); ctx.closePath(); ctx.fillStyle = wl(lam, 0.25); ctx.fill();
+    ctx.strokeStyle = wl(lam); ctx.lineWidth = 2; ctx.beginPath();
+    profile.forEach(function(v, i){ var xx = ix + i / (GW - 1) * iw, yy = py + ph - v * ph * 0.9; if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); });
+    ctx.stroke(); ctx.restore();
+    var x1 = ix + (FOV / 2 - sep / 2) * pxPerNm, x2 = ix + (FOV / 2 + sep / 2) * pxPerNm;
+    [x1, x2].forEach(function(x){ ctx.strokeStyle = 'rgba(242,166,90,0.8)'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x, py + ph); ctx.stroke(); ctx.setLineDash([]); });
+    text(ctx, 'brightness along the line through both dots (dashed = true positions)', ix, py + ph + 15, { size: 11, color: C.muted });
+  });
+})();
+
+/* ---------- 4.3 Contrast modes ---------- */
+(function(){
+  var root = document.getElementById('sim-cont'); if (!root) return;
+  var cv = $('canvas', root), mode = 'bf';
+  var cells = [[0.18, 0.4, 0.09, 0.14, 0.3], [0.38, 0.62, 0.11, 0.08, -0.4], [0.55, 0.32, 0.08, 0.12, 0.8], [0.74, 0.6, 0.1, 0.13, 0.2], [0.88, 0.3, 0.07, 0.1, -0.7], [0.3, 0.2, 0.06, 0.08, 1.2]];
+  var crystals = [[0.25, 0.7, 0.4], [0.47, 0.45, -0.6], [0.65, 0.78, 1.1], [0.82, 0.45, 0.2], [0.12, 0.22, -1.2]];
+  var NOTE = {
+    bf: 'Bright-field: the living cells are almost invisible, because they hardly absorb light.',
+    pc: 'Phase contrast: delays in the light become darkness, with a bright halo. Living cells, no stain.',
+    dic: 'DIC: edges look raised, like a 3D relief, with one side bright and the other dark.',
+    stain: 'Stained: very clear colours, but the cells had to be killed (fixed) and dyed first.',
+    pol: 'Polarised light: the background goes dark; only ordered, needle-shaped crystals glow, as in gout.'
+  };
+  seg(document.getElementById('ct-modes'), 'm', function(m){ mode = m; setText('ct-note', NOTE[m]); });
+  addSim(cv, function(t){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h;
+    var BG = { bf: '#E6E3D8', pc: '#8E8E89', dic: '#9C9C97', stain: '#F1E9EE', pol: '#06080C' };
+    clear(ctx, w, h, BG[mode]);
+    var s = Math.min(w, h * 1.6);
+    cells.forEach(function(c){
+      var x = c[0] * w, y = c[1] * h, rx = c[2] * s, ry = c[3] * s, rot = c[4];
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+      ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      if (mode === 'bf'){ ctx.fillStyle = 'rgba(0,0,0,0.035)'; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.05)'; ctx.stroke(); }
+      else if (mode === 'pc'){ ctx.fillStyle = '#4C4C49'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 3; ctx.stroke(); }
+      else if (mode === 'dic'){ var gr = ctx.createLinearGradient(-rx, -ry, rx, ry); gr.addColorStop(0, '#E2E2DE'); gr.addColorStop(0.5, '#9C9C97'); gr.addColorStop(1, '#4E4E4A'); ctx.fillStyle = gr; ctx.fill(); }
+      else if (mode === 'stain'){ ctx.fillStyle = '#E3A9CF'; ctx.fill(); ctx.strokeStyle = '#B56A9D'; ctx.lineWidth = 1.5; ctx.stroke(); }
+      else { ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fill(); }
+      ctx.beginPath(); ctx.ellipse(rx * 0.15, 0, rx * 0.38, ry * 0.4, 0, 0, Math.PI * 2);
+      if (mode === 'bf'){ ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fill(); }
+      else if (mode === 'pc'){ ctx.fillStyle = '#2E2E2C'; ctx.fill(); }
+      else if (mode === 'dic'){ var g2 = ctx.createLinearGradient(-rx * 0.3, -ry * 0.3, rx * 0.5, ry * 0.4); g2.addColorStop(0, '#5A5A56'); g2.addColorStop(1, '#D6D6D2'); ctx.fillStyle = g2; ctx.fill(); }
+      else if (mode === 'stain'){ ctx.fillStyle = '#4B2C8A'; ctx.fill(); }
+      ctx.restore();
+    });
+    if (mode === 'pol' || mode === 'bf' || mode === 'pc'){
+      crystals.forEach(function(c, i){
+        var x = c[0] * w, y = c[1] * h, L = s * 0.09;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(c[2]);
+        if (mode === 'pol'){ var b = 0.75 + 0.25 * Math.sin(t * 2 + i); ctx.shadowColor = i % 2 ? '#7FD3FF' : '#FFE27A'; ctx.shadowBlur = 14; ctx.fillStyle = (i % 2 ? 'rgba(127,211,255,' : 'rgba(255,226,122,') + b + ')'; }
+        else ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx.fillRect(-L / 2, -2, L, 4); ctx.restore();
+      });
+    }
+    var lab = { bf: 'Bright-field', pc: 'Phase contrast', dic: 'DIC', stain: 'Stained (dead cells)', pol: 'Polarised light' }[mode];
+    ctx.fillStyle = 'rgba(11,19,34,0.75)'; ctx.fillRect(8, 8, 14 + lab.length * 7.4, 24);
+    text(ctx, lab, 15, 25, { size: 13, weight: '600' });
+  });
+})();
+
+/* ---------- 4.5 Optical sectioning ---------- */
+(function(){
+  var root = document.getElementById('sim-sect'); if (!root) return;
+  var cv = $('canvas', root), mode = 'wf', f = 0.4, B = [];
+  for (var i = 0; i < 46; i++) B.push({ x: rand(0.08, 0.92), y: rand(0.1, 0.9), z: rand(0.05, 0.95) });
+  function att(){ return Math.exp(-f * (mode === 'tp' ? 0.8 : 2.2)); }
+  function upd(){
+    setText('se-haze', mode === 'wf' ? 'High' : 'Very low', mode === 'wf' ? 'bad' : 'ok');
+    setText('se-sig', Math.round(att() * 100) + ' %', att() > 0.5 ? 'ok' : (att() > 0.25 ? 'mid' : 'bad'));
+    setText('se-light', mode === 'tp' ? 'Near-IR, 920 nm' : 'Blue, 488 nm');
+  }
+  seg(document.getElementById('se-modes'), 'm', function(m){ mode = m; upd(); });
+  range('se-depth', function(v){ return Math.round(v * 500) + ' µm'; }, function(v){ f = v; upd(); });
+  addSim(cv, function(t){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var tall = w < 560, pad = 12, gap = 14;
+    var A = tall ? { x: pad, y: 26, w: w - 2 * pad, h: (h - 26 - 2 * gap) / 2 - 10 } : { x: pad, y: 26, w: (w - 2 * pad - gap) / 2, h: h - 40 };
+    var I = tall ? { x: pad, y: A.y + A.h + gap + 20, w: w - 2 * pad, h: h - (A.y + A.h + gap + 20) - pad } : { x: A.x + A.w + gap, y: 26, w: A.w, h: h - 40 };
+    text(ctx, 'Side view of the sample', A.x, A.y - 8, { size: 12, color: C.muted });
+    text(ctx, 'What the detector sees at this depth', I.x, I.y - 8, { size: 12, color: C.muted });
+    var top = A.y + 22;
+    function SX(x){ return A.x + x * A.w; } function SZ(z){ return top + z * (A.y + A.h - top); }
+    // objective
+    ctx.fillStyle = '#5A6B85'; ctx.beginPath(); ctx.moveTo(SX(0.3), A.y); ctx.lineTo(SX(0.7), A.y); ctx.lineTo(SX(0.62), top - 4); ctx.lineTo(SX(0.38), top - 4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#1A2338'; ctx.fillRect(A.x, top, A.w, A.y + A.h - top);
+    var xs = mode === 'wf' ? 0.5 : 0.5 + 0.36 * Math.sin(t * 0.9), beamCol = mode === 'tp' ? 'rgba(201,48,44,0.28)' : 'rgba(79,140,255,0.26)';
+    function hw(z){ return 0.17 * Math.abs(z - f) / Math.max(f, 0.08) + 0.012; }
+    if (mode === 'wf'){ ctx.fillStyle = 'rgba(79,140,255,0.16)'; ctx.fillRect(A.x, top, A.w, A.y + A.h - top); }
+    else {
+      ctx.fillStyle = beamCol; ctx.beginPath();
+      ctx.moveTo(SX(xs - hw(0)), SZ(0)); ctx.lineTo(SX(xs - 0.012), SZ(f)); ctx.lineTo(SX(xs - hw(1)), SZ(1));
+      ctx.lineTo(SX(xs + hw(1)), SZ(1)); ctx.lineTo(SX(xs + 0.012), SZ(f)); ctx.lineTo(SX(xs + hw(0)), SZ(0)); ctx.closePath(); ctx.fill();
+    }
+    ctx.strokeStyle = C.acc; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(A.x, SZ(f)); ctx.lineTo(A.x + A.w, SZ(f)); ctx.stroke(); ctx.setLineDash([]);
+    text(ctx, 'focus', A.x + A.w - 4, SZ(f) - 4, { size: 11, color: C.acc, align: 'right' });
+    var k = att();
+    B.forEach(function(b){
+      var lit = false, br = 1;
+      if (mode === 'wf') lit = true;
+      else if (mode === 'cf') lit = Math.abs(b.x - xs) < hw(b.z);
+      else { lit = Math.abs(b.x - xs) < 0.04 && Math.abs(b.z - f) < 0.05; }
+      br = Math.exp(-b.z * (mode === 'tp' ? 0.8 : 2.2));
+      dot(ctx, SX(b.x), SZ(b.z), 3.2, lit ? 'rgba(95,211,141,' + (0.35 + 0.65 * br) + ')' : 'rgba(150,165,190,0.35)', lit ? 10 : 0);
+    });
+    if (mode === 'cf'){ text(ctx, 'pinhole blocks light from off the focus line', A.x + 4, A.y + A.h - 6, { size: 11, color: C.text }); }
+    if (mode === 'tp'){ text(ctx, 'only the focal spot glows (I² effect)', A.x + 4, A.y + A.h - 6, { size: 11, color: C.text }); }
+    // image panel
+    ctx.fillStyle = '#05080F'; ctx.fillRect(I.x, I.y, I.w, I.h);
+    ctx.save(); ctx.beginPath(); ctx.rect(I.x, I.y, I.w, I.h); ctx.clip();
+    B.forEach(function(b){
+      var dz = Math.abs(b.z - f), px = I.x + b.x * I.w, py = I.y + b.y * I.h;
+      if (dz < 0.05){ dot(ctx, px, py, 3.6, 'rgba(95,211,141,' + clamp(k * 1.1, 0.12, 1) + ')', 12); }
+      else if (mode === 'wf'){
+        var rr = 6 + dz * Math.min(I.w, I.h) * 0.35, gr = ctx.createRadialGradient(px, py, 0, px, py, rr);
+        gr.addColorStop(0, 'rgba(95,211,141,' + (0.18 * k * Math.exp(-b.z)) + ')'); gr.addColorStop(1, 'rgba(95,211,141,0)');
+        ctx.fillStyle = gr; ctx.fillRect(px - rr, py - rr, rr * 2, rr * 2);
+      }
+    });
+    ctx.restore();
+    ctx.strokeStyle = C.line; ctx.strokeRect(I.x, I.y, I.w, I.h);
+  });
+  upd();
+})();
+
+/* ---------- 4.7 OCT ---------- */
+(function(){
+  var root = document.getElementById('sim-oct'); if (!root) return;
+  var cv = $('canvas', root), src = 'sld', z = 100, N = 500, rec = new Array(N).fill(null), lastBin = null, autoOn = false;
+  var LAY = [[200, 0.6, 'nerve fibre layer'], [480, 1.0, 'photoreceptors'], [760, 0.7, 'RPE / choroid']];
+  var P = 6, Lc = 14;
+  function env(dz){ return src === 'sld' ? Math.exp(-Math.pow(dz / Lc, 2)) : 1; }
+  function sig(zz){ var s = 0; LAY.forEach(function(L){ var dz = zz - L[0]; s += L[1] * env(dz) * Math.cos(2 * Math.PI * dz / P); }); return s; }
+  function record(zz){
+    var b = clamp(Math.round(zz / 1000 * (N - 1)), 0, N - 1);
+    if (lastBin === null) lastBin = b;
+    var a = Math.min(b, lastBin), c = Math.max(b, lastBin);
+    for (var i = a; i <= c; i++) rec[i] = sig(i / (N - 1) * 1000);
+    lastBin = b;
+  }
+  function status(){
+    setText('oc-z', Math.round(z) + ' µm');
+    if (src === 'laser'){ setText('oc-sig', 'Always fringing', 'mid'); setText('oc-layer', 'Cannot tell depth'); return; }
+    var best = null, bv = 0; LAY.forEach(function(L){ var v = L[1] * env(z - L[0]); if (v > bv){ bv = v; best = L; } });
+    if (bv > 0.3){ setText('oc-sig', 'Interference!', 'ok'); setText('oc-layer', best[2] + ' at ' + best[0] + ' µm'); }
+    else { setText('oc-sig', 'Quiet'); setText('oc-layer', '–'); }
+  }
+  var R = range('oc-range', function(v){ return v + ' µm'; }, function(v){ z = v; record(v); status(); });
+  seg(document.getElementById('oc-src'), 's', function(s){ src = s; rec.fill(null); lastBin = null; status(); });
+  document.getElementById('oc-clear').addEventListener('click', function(){ rec.fill(null); lastBin = null; });
+  document.getElementById('oc-auto').addEventListener('click', function(){ rec.fill(null); lastBin = null; z = 0; R.set(0); autoOn = true; });
+  addSim(cv, function(t, dt){
+    if (autoOn){ var nz = Math.min(1000, z + dt * 170); R.set(Math.round(nz)); z = nz; if (nz >= 1000) autoOn = false; }
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h);
+    var pad = 12, x0 = Math.max(96, w * 0.2), x1 = w - pad - 6;
+    function X(zz){ return x0 + zz / 1000 * (x1 - x0); }
+    var yRef = 30, ySam = h * 0.27, bsx = x0 - 40, bsy = (yRef + ySam) / 2;
+    // source & detector
+    ctx.fillStyle = '#2F6FDB'; ctx.fillRect(pad, bsy - 12, 34, 24); text(ctx, 'source', pad, bsy + 26, { size: 10, color: C.muted });
+    arrow(ctx, pad + 36, bsy, bsx - 10, bsy, '#C9D5E6', 2);
+    ctx.save(); ctx.translate(bsx, bsy); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#7FB8E6'; ctx.fillRect(-9, -9, 18, 18); ctx.restore();
+    // arms
+    ctx.strokeStyle = 'rgba(201,213,230,0.6)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(bsx, bsy); ctx.lineTo(bsx + 20, yRef); ctx.lineTo(X(z), yRef); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bsx, bsy); ctx.lineTo(bsx + 20, ySam); ctx.lineTo(x1, ySam); ctx.stroke();
+    text(ctx, 'reference arm', bsx + 24, yRef - 8, { size: 11, color: C.muted });
+    // eye layers
+    ctx.fillStyle = 'rgba(214,166,136,0.18)'; ctx.fillRect(X(0), ySam - 18, X(1000) - X(0), 36);
+    LAY.forEach(function(L){ ctx.fillStyle = 'rgba(242,166,90,' + (0.35 + 0.5 * L[1]) + ')'; ctx.fillRect(X(L[0]) - 3, ySam - 18, 6, 36); });
+    text(ctx, 'eye tissue (sample arm) →', bsx + 24, ySam + 32, { size: 11, color: C.muted });
+    // mirror
+    ctx.fillStyle = '#E7EEF8'; ctx.fillRect(X(z) - 2, yRef - 14, 5, 28);
+    ctx.strokeStyle = 'rgba(242,166,90,0.6)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(z), yRef + 14); ctx.lineTo(X(z), h - 26); ctx.stroke(); ctx.setLineDash([]);
+    text(ctx, 'mirror', X(z) + 6, yRef + 4, { size: 11, color: C.text });
+    // detector
+    var dY = bsy + 40; ctx.fillStyle = '#1B2A44'; ctx.fillRect(bsx - 14, dY, 28, 18); ctx.strokeStyle = '#C9D5E6'; ctx.strokeRect(bsx - 14, dY, 28, 18);
+    text(ctx, 'detector', bsx, dY + 32, { size: 10, color: C.muted, align: 'center' });
+    var live = Math.abs(sig(z)); ctx.save(); ctx.fillStyle = 'rgba(95,211,141,' + clamp(live, 0, 1) + ')'; ctx.shadowColor = '#5FD38D'; ctx.shadowBlur = 12 * live; ctx.fillRect(bsx - 12, dY + 2, 24, 14); ctx.restore();
+    // graph
+    var gy = h * 0.46, gh = h - gy - 28;
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.strokeRect(x0, gy, x1 - x0, gh);
+    text(ctx, 'detector signal', pad, gy + 14, { size: 11, color: C.muted });
+    text(ctx, 'vs mirror', pad, gy + 28, { size: 11, color: C.muted });
+    text(ctx, 'position', pad, gy + 42, { size: 11, color: C.muted });
+    [0, 250, 500, 750, 1000].forEach(function(v){ text(ctx, String(v), X(v), gy + gh + 14, { size: 10, color: C.muted, align: 'center', font: MONO }); });
+    text(ctx, 'µm', x1, gy + gh + 26, { size: 10, color: C.muted, align: 'right' });
+    var mid = gy + gh / 2, A = gh * 0.42;
+    ctx.save(); ctx.strokeStyle = '#5FD38D'; ctx.lineWidth = 1.2; ctx.beginPath(); var pen = false;
+    for (var i = 0; i < N; i++){ var v = rec[i]; if (v === null){ pen = false; continue; } var xx = X(i / (N - 1) * 1000), yy = mid - clamp(v, -1.2, 1.2) * A; if (!pen){ ctx.moveTo(xx, yy); pen = true; } else ctx.lineTo(xx, yy); }
+    ctx.stroke(); ctx.restore();
+  });
+  status();
+})();
+
+/* ---------- 5.1 Optical tweezers ---------- */
+(function(){
+  var root = document.getElementById('sim-tw'); if (!root) return;
+  var cv = $('canvas', root), W = 10, flow = 0, b = { x: 0, y: 0 }, drag = false, escaped = false, phase = 0;
+  function Fmax(){ return 0.1 * 1.33 * W * 1e-3 / 3e8 * 1e12; }
+  var CMP = [['Kinesin step', 4], ['RNA polymerase stall', 22], ['Viral packaging motor', 50], ['DNA overstretching', 65]];
+  function upd(){
+    var F = Fmax(); setText('tw-f', F.toFixed(1) + ' pN'); setText('tw-flow', flow.toFixed(1) + ' pN');
+    var best = null; CMP.forEach(function(c){ if (F >= c[1]) best = c[0]; });
+    setText('tw-cmp', best || 'Too weak for motors', best ? 'ok' : 'mid');
+  }
+  range('tw-w', function(v){ return v + ' mW'; }, function(v){ W = v; upd(); });
+  range('tw-fl', function(v){ return v.toFixed(1) + ' pN'; }, function(v){ flow = v; upd(); });
+  document.getElementById('tw-reset').addEventListener('click', function(){ b.x = 0; b.y = 0; escaped = false; });
+  var geo = { cx: 0, cy: 0, r0: 20, rb: 16 };
+  function pos(e){ var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left - geo.cx, y: e.clientY - r.top - geo.cy }; }
+  cv.addEventListener('pointerdown', function(e){ var p = pos(e); if (Math.hypot(p.x - b.x, p.y - b.y) < geo.rb * 2.2){ drag = true; escaped = false; try { cv.setPointerCapture(e.pointerId); } catch (_) {} b.x = p.x; b.y = p.y; e.preventDefault(); } });
+  cv.addEventListener('pointermove', function(e){ if (!drag) return; var p = pos(e); b.x = p.x; b.y = p.y; });
+  function up(){ drag = false; }
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  addSim(cv, function(t, dt){
+    var g = fit(cv), ctx = g.ctx, w = g.w, h = g.h; clear(ctx, w, h, '#0E2236');
+    geo.cx = w / 2; geo.cy = h / 2; var s = Math.min(w, h); geo.r0 = s * 0.06; geo.rb = s * 0.045;
+    var F = Fmax(), r0 = geo.r0, k = s / 300 * 7;
+    phase += dt * (0.4 + flow * 0.12);
+    ctx.strokeStyle = 'rgba(127,184,230,0.14)'; ctx.lineWidth = 1.5;
+    for (var i = 0; i < 9; i++){ var yy = (i + 0.5) / 9 * h, off = ((phase * 60 + i * 37) % (w + 80)) - 40; ctx.beginPath(); ctx.moveTo(off, yy); ctx.lineTo(off + 30, yy); ctx.stroke(); }
+    if (W > 0){ var gl = ctx.createRadialGradient(geo.cx, geo.cy, 0, geo.cx, geo.cy, r0 * 3.2); gl.addColorStop(0, 'rgba(255,70,60,' + clamp(0.15 + W / 120, 0, 0.85) + ')'); gl.addColorStop(1, 'rgba(255,70,60,0)'); ctx.fillStyle = gl; ctx.fillRect(geo.cx - r0 * 4, geo.cy - r0 * 4, r0 * 8, r0 * 8); }
+    ctx.strokeStyle = W > 0 ? '#FF6B5B' : '#5A6B85'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(geo.cx - 10, geo.cy); ctx.lineTo(geo.cx + 10, geo.cy); ctx.moveTo(geo.cx, geo.cy - 10); ctx.lineTo(geo.cx, geo.cy + 10); ctx.stroke();
+    text(ctx, W > 0 ? 'laser focus' : 'laser off', geo.cx, geo.cy - r0 * 3.4, { size: 12, color: W > 0 ? '#FF8A7A' : C.muted, align: 'center' });
+    var d = Math.hypot(b.x, b.y), fx = 0, fy = 0;
+    if (!escaped && d > 0.001 && W > 0){ var mag = F * (d / r0) * Math.exp(0.5 * (1 - (d / r0) * (d / r0))); fx = -mag * b.x / d; fy = -mag * b.y / d; }
+    if (!drag){
+      var vx = (fx + flow) * k, vy = fy * k;
+      b.x += vx * dt + (Math.random() - 0.5) * 30 * dt; b.y += vy * dt + (Math.random() - 0.5) * 30 * dt;
+      if (Math.hypot(b.x, b.y) > r0 * 4.5) escaped = true;
+    }
+    var bx = geo.cx + b.x, by = geo.cy + b.y, onScreen = bx > -geo.rb && bx < w + geo.rb && by > -geo.rb && by < h + geo.rb;
+    if (onScreen){
+      var bg = ctx.createRadialGradient(bx - geo.rb * 0.35, by - geo.rb * 0.35, 1, bx, by, geo.rb);
+      bg.addColorStop(0, '#FFFFFF'); bg.addColorStop(0.6, '#BFD8EE'); bg.addColorStop(1, '#6E8FB0');
+      ctx.beginPath(); ctx.arc(bx, by, geo.rb, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill();
+      var fm = Math.hypot(fx, fy);
+      if (fm > 0.05 && !escaped){ var L = clamp(fm * 9, 10, s * 0.25); arrow(ctx, bx, by, bx + fx / fm * L, by + fy / fm * L, C.acc, 3); }
+      if (flow > 0){ arrow(ctx, bx, by + geo.rb + 8, bx + clamp(flow * 4, 10, s * 0.2), by + geo.rb + 8, '#7FB8E6', 2); }
+    }
+    text(ctx, 'orange arrow = trap force · blue = water flow', 10, h - 10, { size: 11, color: C.muted });
+    if (drag) text(ctx, 'release to let go', 10, 18, { size: 12, color: C.text });
+    var trapped = !escaped && onScreen;
+    if ((T * 8 | 0) % 2 === 0) setText('tw-st', trapped ? (drag ? 'Held by you' : 'Trapped') : 'Escaped!', trapped ? 'ok' : 'bad');
+  });
+  upd();
+})();
+
+/* ---------- Quizzes ---------- */
+(function(){
+  var Q = {
+    light: { t: 'Check yourself · Part 01', q: [
+      ['Which photon carries more energy?', ['405 nm (violet)', '810 nm (near-infrared)', 'They are the same'], 0, 'Energy ∝ 1/λ, so halving the wavelength doubles the energy: 3.06 eV vs 1.53 eV.'],
+      ['Why can a 193 nm laser cut the cornea but a 633 nm laser cannot?', ['Each 193 nm photon has more energy than a chemical bond', 'A 193 nm laser is always brighter', 'Red light bounces off the eye'], 0, '6.42 eV per photon is above the C–C bond (≈ 3.6 eV); 1.96 eV is below it.'],
+      ['Which light source is the most coherent?', ['Laser', 'LED', 'Halogen lamp'], 0, 'A laser has a very narrow colour spread, so its waves stay in step for centimetres or more.']
+    ] },
+    tissue: { t: 'Check yourself · Part 02', q: [
+      ['What is the optical window?', ['650–1350 nm, where tissue absorbs least', '200–400 nm, where DNA absorbs', 'Only visible light, 400–700 nm'], 0, 'Blood and melanin absorb below ≈ 650 nm and water above ≈ 1350 nm, leaving a window in between.'],
+      ['A sample lets 10 % of the light through. What is its absorbance?', ['1', '0.1', '10'], 0, 'A = −log₁₀(0.10) = 1.'],
+      ['You double the concentration and keep the cuvette the same. The absorbance…', ['doubles', 'halves', 'stays the same'], 0, 'Beer–Lambert: A = εcl is a straight line through zero.'],
+      ['Very small particles scatter which colour more?', ['Blue', 'Red', 'Both equally'], 0, 'Rayleigh scattering ∝ λ⁻⁴: blue (450 nm) scatters about 5.9× more than red (700 nm).']
+    ] },
+    spectroscopy: { t: 'Check yourself · Part 03', q: [
+      ['Compared with the light absorbed, fluorescence comes out at…', ['a longer wavelength', 'a shorter wavelength', 'exactly the same wavelength'], 0, 'Some energy is lost as heat first, so the emitted photon has less energy: the Stokes shift.'],
+      ['Which two wavelengths does a pulse oximeter use?', ['660 nm and 940 nm', '260 nm and 280 nm', '450 nm and 550 nm'], 0, 'Red and near-infrared sit in the optical window, and oxy- and deoxy-haemoglobin absorb them differently.'],
+      ['A spectrum shows a peak at 260 nm. The sample is most likely…', ['DNA', 'protein', 'haemoglobin'], 0, 'Nucleic acids absorb most at 260 nm; proteins at 280 nm; haemoglobin at 415 nm.'],
+      ['What is the main advantage of Raman spectroscopy?', ['No label or dye is needed', 'The signal is very strong', 'It only works with UV light'], 0, 'The bonds themselves give the fingerprint. The signal is actually very weak (≈ 1 in 10⁶–10⁸ photons).']
+    ] },
+    imaging: { t: 'Check yourself · Part 04', q: [
+      ['Green light (500 nm) and a lens with NA = 1.25. What is the blur limit d?', ['200 nm', '400 nm', '625 nm'], 0, 'd = λ / (2 NA) = 500 / 2.5 = 200 nm.'],
+      ['How does a confocal microscope remove out-of-focus light?', ['With a pinhole in front of the detector', 'With a dichroic mirror', 'With a diffraction grating'], 0, 'Light from above or below the focus misses the pinhole and is blocked.'],
+      ['Why can two-photon microscopy image deeper than confocal?', ['Near-IR light scatters and is absorbed less', 'It uses UV light', 'It has a bigger pinhole'], 0, 'Near-IR is in the optical window, and only the focus is excited.'],
+      ['Why does OCT use a broadband (low-coherence) source?', ['So interference happens only at one depth, giving thin slices', 'Because it is brighter', 'Because it is cheaper than a laser'], 0, 'A short coherence length means the arms must match closely, which pinpoints depth.']
+    ] },
+    manipulation: { t: 'Check yourself · Part 05', q: [
+      ['Q = 0.1, nₘ = 1.33, W = 20 mW. What is the trapping force?', ['≈ 8.9 pN', '≈ 0.89 pN', '≈ 89 pN'], 0, 'F = 0.1 × 1.33 × 0.020 / 3.00 × 10⁸ = 8.9 × 10⁻¹² N.'],
+      ['Why are 1064 nm lasers popular for optical tweezers?', ['Tissue absorbs little, so cells heat less', 'You can see the beam', 'Each photon has more energy'], 0, '1064 nm is near the optical window: water and haemoglobin absorb little, so less damage.'],
+      ['In laser nanosurgery, why is only the focus affected?', ['Only there is the intensity high enough for multiphoton absorption', 'The rest of the cell reflects the laser', 'The laser is switched off elsewhere'], 0, 'Nonlinear absorption needs extreme intensity, which exists only at the tight focus.']
+    ] }
+  };
+  $$('.quiz').forEach(function(box){
+    var d = Q[box.dataset.quiz]; if (!d) return;
+    var score = 0, answered = 0;
+    var h = document.createElement('h3'); h.textContent = d.t; box.appendChild(h);
+    var sc = document.createElement('p'); sc.className = 'score'; sc.textContent = 'Score: 0 / ' + d.q.length; box.appendChild(sc);
+    d.q.forEach(function(q, qi){
+      var wrap = document.createElement('div'); wrap.className = 'q';
+      var p = document.createElement('p'); p.className = 'qt'; p.textContent = (qi + 1) + '. ' + q[0]; wrap.appendChild(p);
+      var opts = document.createElement('div'); opts.className = 'opts';
+      var order = q[1].map(function(_, i){ return i; });
+      for (var i = order.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var tmp = order[i]; order[i] = order[j]; order[j] = tmp; }
+      var fb = document.createElement('p'); fb.className = 'fb'; fb.hidden = true;
+      var done = false;
+      order.forEach(function(oi){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.textContent = q[1][oi];
+        b.addEventListener('click', function(){
+          if (done) return; done = true; answered++;
+          var ok = oi === q[2]; if (ok) score++;
+          b.classList.add(ok ? 'right' : 'wrong');
+          $$('.opt', opts).forEach(function(x, xi){ if (order[xi] === q[2]) x.classList.add('right'); x.setAttribute('aria-disabled', 'true'); });
+          fb.hidden = false; fb.innerHTML = '';
+          var s = document.createElement('b'); s.textContent = ok ? 'Correct. ' : 'Not quite. '; fb.appendChild(s); fb.appendChild(document.createTextNode(q[3]));
+          sc.textContent = 'Score: ' + score + ' / ' + d.q.length + (answered === d.q.length ? (score === d.q.length ? ' · full marks!' : ' · review the topics above and try the simulations again') : '');
+        });
+        opts.appendChild(b);
+      });
+      wrap.appendChild(opts); wrap.appendChild(fb); box.appendChild(wrap);
+    });
+  });
+})();
+
+/* ---------- Navigation: active part + progress ---------- */
+(function(){
+  var links = $$('.nav a'), bar = document.getElementById('progress'), nav = $('.nav');
+  var ids = links.map(function(a){ return a.getAttribute('href').slice(1); });
+  function onScroll(){
+    var doc = document.documentElement, max = doc.scrollHeight - window.innerHeight;
+    if (bar) bar.style.transform = 'scaleX(' + (max > 0 ? clamp(window.scrollY / max, 0, 1) : 0) + ')';
+    var cur = null;
+    ids.forEach(function(id){ var el = document.getElementById(id); if (el && el.getBoundingClientRect().top < window.innerHeight * 0.35) cur = id; });
+    links.forEach(function(a){
+      var on = a.getAttribute('href') === '#' + cur;
+      if (on && !a.classList.contains('on') && nav){ nav.scrollTo({ left: a.offsetLeft - 16, behavior: RM ? 'auto' : 'smooth' }); }
+      a.classList.toggle('on', on);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+})();
+
+})();
+</script>
+</body>
+</html>
